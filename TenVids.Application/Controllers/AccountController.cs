@@ -42,5 +42,14 @@ namespace TenVids.Application.Controllers
            
             return View(loginVM);
         }
+        [HttpGet]
+        public async Task<IActionResult> Logout()
+        {
+           
+            await _accountService.LogoutAsync();
+
+            
+            return RedirectToAction("Index","Home");
+        }
     }
 }

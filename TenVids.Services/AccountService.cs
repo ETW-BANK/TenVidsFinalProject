@@ -67,6 +67,11 @@ namespace TenVids.Services
             return false; 
         }
 
+        public async Task LogoutAsync()
+        {
+            await _signInManager.SignOutAsync();
+        }
+
         #region Private Methods
         private async Task LoginHandlerAsync(ApplicationUser user)
         {
