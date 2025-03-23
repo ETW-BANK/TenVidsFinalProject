@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\TenVids.Data.Access\TenVids.Data.Access.csproj" />
     <ProjectReference Include="..\TenVids.Service.Extensions\TenVids.Service.Extensions.csproj" />
+    <ProjectReference Include="..\TenVids.Services\TenVids.Services.csproj" />
   </ItemGroup>
 
 </Project>
