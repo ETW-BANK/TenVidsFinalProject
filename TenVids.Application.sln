@@ -17,9 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Utilities", "TenVid
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.UnitTests", "TenVids.UnitTests\TenVids.UnitTests.csproj", "{03056151-8BBF-4296-AC23-31A2AF337BE7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.ServiceExtensions", "TenVids.ServiceExtensions\TenVids.ServiceExtensions.csproj", "{57EB8E67-C177-44B1-A5ED-99834ACBBA44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Repository", "TenVids.Repository\TenVids.Repository.csproj", "{8BBA6691-C12E-4E23-B15C-AA23CB367308}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Repository", "TenVids.Repository\TenVids.Repository.csproj", "{8BBA6691-C12E-4E23-B15C-AA23CB367308}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Service.Extensions", "TenVids.Service.Extensions\TenVids.Service.Extensions.csproj", "{EEC69001-FED1-448A-8EB0-7618413A32FC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,14 +55,14 @@ Global
 		{03056151-8BBF-4296-AC23-31A2AF337BE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{03056151-8BBF-4296-AC23-31A2AF337BE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{03056151-8BBF-4296-AC23-31A2AF337BE7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{57EB8E67-C177-44B1-A5ED-99834ACBBA44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{57EB8E67-C177-44B1-A5ED-99834ACBBA44}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{57EB8E67-C177-44B1-A5ED-99834ACBBA44}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{57EB8E67-C177-44B1-A5ED-99834ACBBA44}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8BBA6691-C12E-4E23-B15C-AA23CB367308}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8BBA6691-C12E-4E23-B15C-AA23CB367308}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BBA6691-C12E-4E23-B15C-AA23CB367308}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BBA6691-C12E-4E23-B15C-AA23CB367308}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEC69001-FED1-448A-8EB0-7618413A32FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEC69001-FED1-448A-8EB0-7618413A32FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEC69001-FED1-448A-8EB0-7618413A32FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEC69001-FED1-448A-8EB0-7618413A32FC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

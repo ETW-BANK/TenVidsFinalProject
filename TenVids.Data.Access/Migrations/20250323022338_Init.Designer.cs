@@ -12,7 +12,7 @@ using TenVids.Data.Access.Data;
 namespace TenVids.Data.Access.Migrations
 {
     [DbContext(typeof(TenVidsApplicationContext))]
-    [Migration("20250323001917_Init")]
+    [Migration("20250323022338_Init")]
     partial class Init
     {
         /// <inheritdoc />

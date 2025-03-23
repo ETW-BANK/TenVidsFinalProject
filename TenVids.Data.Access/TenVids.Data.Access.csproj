@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TenVids.Models\TenVids.Models.csproj" />
+    <ProjectReference Include="..\TenVids.Utilities\TenVids.Utilities.csproj" />
   </ItemGroup>
 
 </Project>

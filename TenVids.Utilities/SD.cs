@@ -8,5 +8,10 @@ namespace TenVids.Utilities
 {
    public static class SD
     {
+
+        public const string AdminRole = "Admin";
+        public const string ModeratorRole = "Moderator";
+        public const string UserRole = "User";
+        public static readonly List<string> Roles = new List<string> { AdminRole, ModeratorRole, UserRole };
     }
 }
