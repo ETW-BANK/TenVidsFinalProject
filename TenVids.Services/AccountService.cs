@@ -67,6 +67,7 @@ namespace TenVids.Services
             return false; 
         }
 
+        #region Private Methods
         private async Task LoginHandlerAsync(ApplicationUser user)
         {
             var claimsIdentity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -86,5 +87,6 @@ namespace TenVids.Services
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
         }
+        #endregion
     }
 }
