@@ -3,21 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Application", "TenVids.Application\TenVids.Application.csproj", "{E6750060-BA24-4407-B52C-C368313EED75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Application", "TenVids.Application\TenVids.Application.csproj", "{E6750060-BA24-4407-B52C-C368313EED75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Data.Access", "TenVids.Data.Access\TenVids.Data.Access.csproj", "{210B96AA-2A6A-4481-AE26-B59762EA7294}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Data.Access", "TenVids.Data.Access\TenVids.Data.Access.csproj", "{210B96AA-2A6A-4481-AE26-B59762EA7294}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Models", "TenVids.Models\TenVids.Models.csproj", "{25A054B0-1187-4237-AFAB-2FEE05C40FD4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Models", "TenVids.Models\TenVids.Models.csproj", "{25A054B0-1187-4237-AFAB-2FEE05C40FD4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Services", "TenVids.Services\TenVids.Services.csproj", "{EB6236CA-D17F-4364-AA9D-4F17E4321D66}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Services", "TenVids.Services\TenVids.Services.csproj", "{EB6236CA-D17F-4364-AA9D-4F17E4321D66}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.ViewModels", "TenVids.ViewModels\TenVids.ViewModels.csproj", "{E11764F2-1F15-45F2-AD7E-13F7F53802CA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.ViewModels", "TenVids.ViewModels\TenVids.ViewModels.csproj", "{E11764F2-1F15-45F2-AD7E-13F7F53802CA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Utilities", "TenVids.Utilities\TenVids.Utilities.csproj", "{E87065FD-76CA-43E8-8A27-ECBD4757A21F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Utilities", "TenVids.Utilities\TenVids.Utilities.csproj", "{E87065FD-76CA-43E8-8A27-ECBD4757A21F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.UnitTests", "TenVids.UnitTests\TenVids.UnitTests.csproj", "{03056151-8BBF-4296-AC23-31A2AF337BE7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.UnitTests", "TenVids.UnitTests\TenVids.UnitTests.csproj", "{03056151-8BBF-4296-AC23-31A2AF337BE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.ServiceExtensions", "TenVids.ServiceExtensions\TenVids.ServiceExtensions.csproj", "{57EB8E67-C177-44B1-A5ED-99834ACBBA44}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.ServiceExtensions", "TenVids.ServiceExtensions\TenVids.ServiceExtensions.csproj", "{57EB8E67-C177-44B1-A5ED-99834ACBBA44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Repository", "TenVids.Repository\TenVids.Repository.csproj", "{8BBA6691-C12E-4E23-B15C-AA23CB367308}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -57,6 +59,10 @@ Global
 		{57EB8E67-C177-44B1-A5ED-99834ACBBA44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{57EB8E67-C177-44B1-A5ED-99834ACBBA44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{57EB8E67-C177-44B1-A5ED-99834ACBBA44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8BBA6691-C12E-4E23-B15C-AA23CB367308}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8BBA6691-C12E-4E23-B15C-AA23CB367308}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8BBA6691-C12E-4E23-B15C-AA23CB367308}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8BBA6691-C12E-4E23-B15C-AA23CB367308}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
