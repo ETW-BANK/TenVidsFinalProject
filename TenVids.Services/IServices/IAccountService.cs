@@ -11,5 +11,6 @@ namespace TenVids.Services.IServices
     {
         Task<LoginVM> Login(string returnUrl);
 
+        Task<bool> LoginAsync(LoginVM loginVM);
     }
 }

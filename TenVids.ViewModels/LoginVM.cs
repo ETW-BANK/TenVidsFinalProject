@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace TenVids.ViewModels
 {
@@ -17,12 +15,13 @@ namespace TenVids.ViewModels
         public string UserName
         {
             get => _userName;
-            set => _userName = value?.ToLower(); 
+            set => _userName =!string.IsNullOrEmpty(value)? value.ToLower():null; 
         }
 
         [Required(ErrorMessage = "Password is required")]
         public string Password { get; set; }
 
+        [ValidateNever]
         public string RetunUrl { get; set; }
     }
 }
