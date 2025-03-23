@@ -2,12 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using TenVids.Models;
 using TenVids.Services.IServices;
 using TenVids.ViewModels;
@@ -40,10 +35,10 @@ namespace TenVids.Services
         {
             if (loginVM == null || string.IsNullOrEmpty(loginVM.UserName) || string.IsNullOrEmpty(loginVM.Password))
             {
-                return false;
+                return false; 
             }
 
-         
+           
             var user = await _userManager.FindByNameAsync(loginVM.UserName);
             if (user == null)
             {
@@ -52,11 +47,10 @@ namespace TenVids.Services
 
             if (user == null)
             {
-                Console.WriteLine("User not found.");
                 return false; 
             }
 
-          
+           
             var result = await _signInManager.PasswordSignInAsync(
                 user,
                 loginVM.Password,
@@ -65,17 +59,14 @@ namespace TenVids.Services
 
             if (result.Succeeded)
             {
-                
-                Console.WriteLine("Login successful.");
                
                 await LoginHandlerAsync(user);
-                return true;
+                return true; 
             }
 
-          
-            Console.WriteLine("Login failed. Reason: " + result.ToString());
             return false; 
         }
+
         private async Task LoginHandlerAsync(ApplicationUser user)
         {
             var claimsIdentity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -84,15 +75,13 @@ namespace TenVids.Services
             claimsIdentity.AddClaim(new Claim(ClaimTypes.Email, user.Email));
             claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
-           
+            // Add user roles to claims
             var roles = await _userManager.GetRolesAsync(user);
             claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var principal = new ClaimsPrincipal(claimsIdentity);
 
-            Console.WriteLine("Claims created: " + string.Join(", ", claimsIdentity.Claims.Select(c => c.Type + ": " + c.Value)));
-
-          
+            // Sign in the user
             await _httpContextAccessor.HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);

@@ -32,14 +32,14 @@ namespace TenVids.Application.Controllers
                 var loginResult = await _accountService.LoginAsync(loginVM);
                 if (loginResult)
                 {
-                    return RedirectToAction("Index", "Home"); // Redirect to home page or return URL
+                    return RedirectToAction("Index", "Home"); 
                 }
 
-                // If login fails, add an error message
+             
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
 
-            // If the model state is invalid, return the login view with errors
+           
             return View(loginVM);
         }
     }
