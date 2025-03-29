@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TenVids.Data.Access\TenVids.Data.Access.csproj" />
+    <ProjectReference Include="..\TenVids.ViewModels\TenVids.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>

@@ -10,15 +10,17 @@ namespace TenVids.Repository
 {
     public class UnitOfWork: IUnitOfWork
     {
-        public IChannelRepository Channel { get; private set; }
+ 
         private readonly TenVidsApplicationContext _context;
-
         public UnitOfWork(TenVidsApplicationContext context)
         {
             _context = context;
-            Channel = new ChannelRepository(_context);
+        
         }
+        public IChannelRepository ChannelRepository => new ChannelRepository(_context); 
+        public IVideosRepository VideosRepository => new VideosRepository(_context);
 
+      public ICategoryRepository CategoryRepository => new CategoryRepository(_context);
         public async Task<bool> CompleteAsync()
         {
             bool success = false;  

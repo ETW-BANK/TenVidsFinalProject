@@ -13,8 +13,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TenVids.Data.Access\TenVids.Data.Access.csproj" />
+    <ProjectReference Include="..\TenVids.Models\TenVids.Models.csproj" />
     <ProjectReference Include="..\TenVids.Repository\TenVids.Repository.csproj" />
     <ProjectReference Include="..\TenVids.Services\TenVids.Services.csproj" />
+    <ProjectReference Include="..\TenVids.UnitTests\TenVids.UnitTests.csproj" />
+    <ProjectReference Include="..\TenVids.Utilities\TenVids.Utilities.csproj" />
+    <ProjectReference Include="..\TenVids.ViewModels\TenVids.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>

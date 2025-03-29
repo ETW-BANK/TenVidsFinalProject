@@ -1,16 +1,27 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using TenVids.Services.IServices;
 using TenVids.Utilities;
+using TenVids.ViewModels;
 
 namespace TenVids.Application.Controllers
 {
     [Authorize(Roles =SD.UserRole)]
     public class ChannelController : Controller
     {
-        
-        public IActionResult Index()
+      private readonly IChannelService _channelService;
+
+        public ChannelController(IChannelService channelService)
         {
-            return View();
+            _channelService = channelService; 
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var model = await _channelService.GetUserChannelAsync();
+            return View(model);
+
         }
     }
 }

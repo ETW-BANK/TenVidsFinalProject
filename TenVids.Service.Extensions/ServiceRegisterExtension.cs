@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using TenVids.Data.Access.Data;
 using TenVids.Models;
+using TenVids.Repository;
 using TenVids.Repository.IRepository;
 using TenVids.Services;
 using TenVids.Services.IServices;
@@ -15,10 +16,14 @@ namespace TenVids.Service.Extensions
     {
         public void RegisterServices(IServiceCollection services, IConfiguration configuration)
         {
-        
             services.AddControllersWithViews();
             services.AddScoped<IAccountService, AccountService>();
-            services.AddScoped<IUnitOfWork, IUnitOfWork>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IVideosService, VideosService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IChannelService, ChannelService>();
+        
+            services.AddHttpContextAccessor();
             var connectionString = configuration.GetConnectionString("TenVidDb");
             services.AddDbContext<TenVidsApplicationContext>(options =>
                 options.UseSqlServer(connectionString));

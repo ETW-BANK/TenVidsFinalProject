@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
 using TenVids.Data.Access.Data;
 using TenVids.Models;
 using TenVids.Repository.IRepository;
@@ -17,5 +13,14 @@ namespace TenVids.Repository
         {
             _context = context;
         }
+
+        public async Task<Channel?> GetByUserIdAsync(string userId, string? includeProperties = null)
+        {
+            return await GetFirstOrDefaultAsync(
+                x => x.AppUserId == userId,
+                includeProperties,
+                tracked: false);
+        }
     }
-}
+ }
+

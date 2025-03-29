@@ -1,1 +1,13 @@
-﻿<p>Channer index here</p>
+﻿
+@model ChannelAddEditVM
+
+@if(string.IsNullOrEmpty(Model.Name))
+{
+    
+    <p>you have no channel available</p>
+}
+else
+{
+    <p>Name:@Model.Name</p>
+    <p>Name:@Model.Description</p>
+}

@@ -28,7 +28,7 @@ namespace TenVids.Repository
             return await query.AnyAsync();
         }
 
-        public Task<int> Count(Expression<Func<T, bool>> filter = null)
+        public Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
         {
             IQueryable<T> query = _dbSet;
             if (filter != null)
@@ -39,7 +39,7 @@ namespace TenVids.Repository
 
         }
 
-        public async Task<IEnumerable<T>> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null)
+        public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderby = null)
         {
             IQueryable<T> query = _dbSet;
 
@@ -80,7 +80,7 @@ namespace TenVids.Repository
                             .FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
         }
 
-        public async Task<T> GetFirstOrDefault(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
         {
             IQueryable<T> query = tracked ? _dbSet : _dbSet.AsNoTracking();
 
