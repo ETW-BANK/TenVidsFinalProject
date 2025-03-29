@@ -68,6 +68,12 @@ namespace TenVids.Application.Controllers
         }
 
         [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Logout()
         {
             if (ModelState.IsValid)
