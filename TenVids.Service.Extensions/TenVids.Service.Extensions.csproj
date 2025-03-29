@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TenVids.Data.Access\TenVids.Data.Access.csproj" />
+    <ProjectReference Include="..\TenVids.Repository\TenVids.Repository.csproj" />
     <ProjectReference Include="..\TenVids.Services\TenVids.Services.csproj" />
   </ItemGroup>
 
