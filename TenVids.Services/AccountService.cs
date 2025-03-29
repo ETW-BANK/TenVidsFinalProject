@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using TenVids.Models;
 using TenVids.Services.IServices;
+using TenVids.Utilities;
 using TenVids.ViewModels;
 
 namespace TenVids.Services
@@ -40,6 +41,7 @@ namespace TenVids.Services
 
            
             var user = await _userManager.FindByNameAsync(loginVM.UserName);
+
             if (user == null)
             {
                 user = await _userManager.FindByEmailAsync(loginVM.UserName);
@@ -72,13 +74,47 @@ namespace TenVids.Services
             await _signInManager.SignOutAsync();
         }
 
+        public async Task Register(RegisterVM registerVM)
+        {
+           if(!registerVM.Password.Equals(registerVM.ConfirmPassword))
+            {
+                throw new Exception("Password and Confirm Password must match");
+            }
+           if(await EmailExists(registerVM.Email))
+            {
+                throw new Exception($"Email '{registerVM.Email}' already exists");
+            }
+            if (await NameExists(registerVM.Name))
+            {
+                throw new Exception($"User '{registerVM.Name}' already exists");
+            }
+
+            var user = new ApplicationUser()
+            {
+                Name = registerVM.Name,
+                Email = registerVM.Email,
+                UserName = registerVM.Email
+            };
+
+            var result = await _userManager.CreateAsync(user,registerVM.Password);
+            await _userManager.AddToRoleAsync(user, SD.UserRole);
+
+            if (!result.Succeeded)
+            {
+                throw new Exception("User creation failed");
+            }
+
+            await LoginHandlerAsync(user);
+
+        }
+
         #region Private Methods
         private async Task LoginHandlerAsync(ApplicationUser user)
         {
             var claimsIdentity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-            claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, user.UserName));
+            claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, user.UserName!));
             claimsIdentity.AddClaim(new Claim(ClaimTypes.GivenName, user.Name));
-            claimsIdentity.AddClaim(new Claim(ClaimTypes.Email, user.Email));
+            claimsIdentity.AddClaim(new Claim(ClaimTypes.Email, user.Email!));
             claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
             // Add user roles to claims
@@ -91,6 +127,18 @@ namespace TenVids.Services
             await _httpContextAccessor.HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
+        }
+
+        private async Task<bool> EmailExists(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            return user != null;
+        }
+
+        private async Task<bool> NameExists(string name)
+        {
+            var user = await _userManager.FindByNameAsync(name);
+            return user != null;
         }
         #endregion
     }

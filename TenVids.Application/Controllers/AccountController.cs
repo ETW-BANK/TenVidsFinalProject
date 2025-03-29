@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 using TenVids.Services.IServices;
 using TenVids.ViewModels;
@@ -7,9 +8,7 @@ namespace TenVids.Application.Controllers
 {
     public class AccountController : Controller
     {
-
         private readonly IAccountService _accountService;
-
         public AccountController(IAccountService accountService)
         {
             _accountService = accountService;
@@ -35,20 +34,46 @@ namespace TenVids.Application.Controllers
                     return RedirectToAction("Index", "Home"); 
                 }
 
-             
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             }
-
            
             return View(loginVM);
         }
+
+        [HttpGet]
+        public  IActionResult Register()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(RegisterVM registerVM)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(registerVM);
+            }
+            try
+            {
+                await _accountService.Register(registerVM);
+                return RedirectToAction("Index", "Home");
+            }
+            catch (Exception ex)
+            {  
+                ModelState.AddModelError(string.Empty, ex.Message);
+
+                return View(registerVM);
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> Logout()
         {
-           
-            await _accountService.LogoutAsync();
-
-            
+            if (ModelState.IsValid)
+            {
+                await _accountService.LogoutAsync();
+            }
             return RedirectToAction("Index","Home");
         }
     }
