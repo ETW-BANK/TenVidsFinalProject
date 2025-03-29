@@ -21,4 +21,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TenVids.Data.Access\TenVids.Data.Access.csproj" />
+  </ItemGroup>
+
 </Project>
