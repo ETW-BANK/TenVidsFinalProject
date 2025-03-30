@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata.Ecma335;
 using TenVids.Data.Access.Data;
 using TenVids.Models;
 using TenVids.Repository.IRepository;
@@ -12,6 +14,11 @@ namespace TenVids.Repository
         public CategoryRepository(TenVidsApplicationContext context) : base(context)
         {
             _context = context;
+        }
+
+        public async Task<IEnumerable<Category>> GetAllCategories()
+        {
+            return await _context.Categories.ToListAsync();
         }
     }
 }
