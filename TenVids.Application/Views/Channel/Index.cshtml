@@ -1,13 +1,59 @@
-﻿
-@model ChannelAddEditVM
+﻿@model ChannelAddEditVM
 
-@if(string.IsNullOrEmpty(Model.Name))
+@if (string.IsNullOrEmpty(Model.Name))
 {
-    
-    <p>you have no channel available</p>
+    <div class="card">
+        <div class="card-body">
+            <h3 class="card-title">Create A Channel</h3>
+            <p class="card-text">You don't have any channels yet. Use the form below to create your channel.</p>
+
+            <form asp-action="CreateChannel" method="post" class="mt-4">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label asp-for="Name" class="form-label"></label>
+                            <input asp-for="Name" class="form-control" />
+                            <span asp-validation-for="Name" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description" rows="6" class="form-control"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-block">
+                            <button type="submit" class="btn btn-success me-md-2">
+                                <i class="bi bi-plus-circle"></i> Create Channel
+                            </button>
+                            <a href="/" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 }
 else
 {
-    <p>Name:@Model.Name</p>
-    <p>Name:@Model.Description</p>
+    <!-- Existing channel display code -->
+    <div class="channel-display">
+        <h2>@Model.Name</h2>
+        <p>@Model.Description</p>
+        <a asp-action="Edit" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Edit Channel
+        </a>
+    </div>
+}
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

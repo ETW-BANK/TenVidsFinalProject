@@ -2,8 +2,9 @@
 using TenVids.Repository.IRepository;
 using TenVids.Services.IServices;
 using TenVids.ViewModels;
-using TenVids.Services.Extensions;
 using Microsoft.AspNetCore.Http;
+using TenVids.Services.Extensions;
+using TenVids.Models;
 
 namespace TenVids.Services
 {
@@ -30,6 +31,32 @@ namespace TenVids.Services
                 Description = channel.Description,
              
             };
+        }
+        public async Task CreateChannelAsync(ChannelAddEditVM model)
+        {
+            var userId = _httpContextAccessor.HttpContext?.User.GetUserId();
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException("User not authenticated");
+
+            if (await _unitOfWork.ChannelRepository.UserHasChannelAsync(userId))
+                throw new InvalidOperationException("User already has a channel");
+
+            var channel = new Channel
+            {
+                Name = model.Name,
+                Description = model.Description,
+                AppUserId = userId,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.ChannelRepository.CreateAsync(channel);
+        }
+
+        public async Task<bool> UserHasChannelAsync()
+        {
+            var userId = _httpContextAccessor.HttpContext?.User.GetUserId();
+            return !string.IsNullOrEmpty(userId) &&
+                   await _unitOfWork.ChannelRepository.UserHasChannelAsync(userId);
         }
     }
 }
