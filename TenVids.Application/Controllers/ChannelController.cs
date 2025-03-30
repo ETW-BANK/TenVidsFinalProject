@@ -40,7 +40,7 @@ namespace TenVids.Application.Controllers
             try
             {
                 await _channelService.CreateChannelAsync(model);
-                TempData["SuccessMessage"] = "Channel created successfully!";
+                TempData["success"] = "Channel created successfully!";
                 return RedirectToAction(nameof(Index));
             }
             catch (InvalidOperationException ex)
@@ -52,10 +52,12 @@ namespace TenVids.Application.Controllers
             }
             catch (UnauthorizedAccessException)
             {
+                TempData["error"]= "User not authenticated";
                 return Challenge(); 
             }
             catch (Exception ex)
-            { 
+            {
+                TempData["error"] = "An error occurred while creating your channel";
                 ModelState.AddModelError("", "An error occurred while creating your channel");
                 return View("Index", model);
             }

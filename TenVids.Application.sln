@@ -19,7 +19,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.UnitTests", "TenVid
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Repository", "TenVids.Repository\TenVids.Repository.csproj", "{8BBA6691-C12E-4E23-B15C-AA23CB367308}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TenVids.Service.Extensions", "TenVids.Service.Extensions\TenVids.Service.Extensions.csproj", "{EEC69001-FED1-448A-8EB0-7618413A32FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TenVids.Service.Extensions", "TenVids.Service.Extensions\TenVids.Service.Extensions.csproj", "{EEC69001-FED1-448A-8EB0-7618413A32FC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9A19FA33-D186-48FE-B0AC-E0174B4F35A2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
