@@ -20,12 +20,12 @@ namespace TenVids.Application.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var model = await _channelService.GetUserChannelAsync();
-            if (model == null)
+            var channel = await _channelService.GetUserChannelAsync();
+            if (channel == null)
             {
                 return RedirectToAction("CreateChannel");
             }
-            return View(model);
+            return View(channel);
 
         }
         [HttpPost]
@@ -40,11 +40,23 @@ namespace TenVids.Application.Controllers
             try
             {
                 await _channelService.CreateChannelAsync(model);
+                TempData["SuccessMessage"] = "Channel created successfully!";
                 return RedirectToAction(nameof(Index));
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
                 ModelState.AddModelError("", ex.Message);
+                model.Name = "";
+                model.Description = "";
+                return View("Index", model);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Challenge(); 
+            }
+            catch (Exception ex)
+            { 
+                ModelState.AddModelError("", "An error occurred while creating your channel");
                 return View("Index", model);
             }
         }

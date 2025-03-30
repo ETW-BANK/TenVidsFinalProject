@@ -32,24 +32,45 @@ namespace TenVids.Services
              
             };
         }
+     
+
         public async Task CreateChannelAsync(ChannelAddEditVM model)
         {
+            if (model == null) throw new ArgumentNullException(nameof(model));
+
             var userId = _httpContextAccessor.HttpContext?.User.GetUserId();
             if (string.IsNullOrEmpty(userId))
                 throw new UnauthorizedAccessException("User not authenticated");
 
+        
             if (await _unitOfWork.ChannelRepository.UserHasChannelAsync(userId))
-                throw new InvalidOperationException("User already has a channel");
+                throw new InvalidOperationException("You can only create one channel per account");
 
+         
+            var normalizedName = model.Name?.Trim().ToLower();
+            var existingChannel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(c =>
+                c.Name.ToLower() == normalizedName);
+
+            if (existingChannel != null)
+            {
+          
+                if (existingChannel.AppUserId == userId)
+                    return;
+
+                throw new InvalidOperationException($"Channel name '{model.Name}' is already taken");
+            }
+
+            
             var channel = new Channel
             {
-                Name = model.Name,
-                Description = model.Description,
+                Name = model.Name.Trim(),
+                Description = model.Description?.Trim(),
                 AppUserId = userId,
                 CreatedAt = DateTime.UtcNow
             };
 
             await _unitOfWork.ChannelRepository.CreateAsync(channel);
+            await _unitOfWork.CompleteAsync();
         }
 
         public async Task<bool> UserHasChannelAsync()
