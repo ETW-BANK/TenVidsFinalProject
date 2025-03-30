@@ -65,7 +65,7 @@ function saveChanges(index, id) {
     }
 
     $.ajax({
-        url: "/Admin/UpdateCategory",
+        url: "/Admin/AddEditCategory",
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify({ Id: id, Name: newName }),
