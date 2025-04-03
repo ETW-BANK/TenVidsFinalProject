@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Threading.Tasks;
+using System;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.ViewModels;
@@ -21,20 +21,26 @@ namespace TenVids.Application.Controllers
         public async Task<IActionResult> Index()
         {
             var channel = await _channelService.GetUserChannelAsync();
+   
             if (channel == null)
             {
-                return RedirectToAction("CreateChannel");
+                
+                var model = TempData["ChannelModel"] as ChannelAddEditVM ?? new ChannelAddEditVM();
+                return View(model);
             }
+         
             return View(channel);
-
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateChannel(ChannelAddEditVM model)
         {
             if (!ModelState.IsValid)
             {
-                return View("Index", model);
+                TempData["ChannelModel"] = model; 
+                TempData["error"] = "Please correct the errors below";
+                return RedirectToAction(nameof(Index));
             }
 
             try
@@ -45,21 +51,19 @@ namespace TenVids.Application.Controllers
             }
             catch (InvalidOperationException ex)
             {
-                ModelState.AddModelError("", ex.Message);
-                model.Name = "";
-                model.Description = "";
-                return View("Index", model);
+                TempData["error"] = ex.Message;
+                TempData["ChannelModel"] = model;
+                return RedirectToAction(nameof(Index));
             }
             catch (UnauthorizedAccessException)
             {
-                TempData["error"]= "User not authenticated";
-                return Challenge(); 
+                return Challenge();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 TempData["error"] = "An error occurred while creating your channel";
-                ModelState.AddModelError("", "An error occurred while creating your channel");
-                return View("Index", model);
+                TempData["ChannelModel"] = model;
+                return RedirectToAction(nameof(Index));
             }
         }
     }

@@ -10,15 +10,15 @@ namespace TenVids.Repository.IRepository
     public interface IRepository<T> where T : class
     {
 
-      Task <IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>>? filter = null, string? includeProperties = null,
+      Task <IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null, string includeProperties = null,
             Func<IQueryable<T>,IOrderedQueryable<T>> orderby = null);
-     Task< T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false);
+     Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null);
         void Add(T entity);
-        void Update(T entity,T destination);  
+        void Update(T entity);  
         void Remove(T item);
         Task <bool> AnyAsync(Expression<Func<T, bool>> filter);
 
-        Task<T>GetByIdAsync(int? id, string? includeProperties = null);
+     Task<T> GetSingleAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false);
         void RemoveRange(IEnumerable<T> items);
 
         Task<int> CountAsync(Expression<Func<T, bool>> filter = null);

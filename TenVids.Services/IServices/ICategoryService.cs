@@ -9,8 +9,8 @@ namespace TenVids.Services.IServices
 
         Task<IEnumerable<CategoryVM>> GetAllCategoriesAsync();
         Task<CategoryVM> GetCategoryByIdAsync(int id);
-        Task<CategoryVM> CreateCategoryAsync(CategoryVM categoryVM);
-        Task<CategoryVM> UpdateCategoryAsync(CategoryVM categoryVM);
+        Task CreateCategoryAsync(CategoryVM categoryVM);
+        Task UpdateCategoryAsync(CategoryVM categoryVM);
         Task<bool> DeleteCategoryAsync(int id);
       
     }

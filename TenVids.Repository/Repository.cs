@@ -63,26 +63,11 @@ namespace TenVids.Repository
             return await query.ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(int? id, string? includeProperties = null)
+      
+
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
             IQueryable<T> query = _dbSet;
-
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var includeProperty in includeProperties.Split(
-                    new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProperty.Trim());
-                }
-            }
-
-            return await query.AsNoTracking()
-                            .FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
-        }
-
-        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
-        {
-            IQueryable<T> query = tracked ? _dbSet : _dbSet.AsNoTracking();
 
             if (!string.IsNullOrEmpty(includeProperties))
             {
@@ -96,6 +81,22 @@ namespace TenVids.Repository
             return await query.Where(filter).FirstOrDefaultAsync(); 
         }
 
+        public async Task<T> GetSingleAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
+        {
+            IQueryable<T> query = tracked ? _dbSet : _dbSet.AsNoTracking();
+
+            if (!string.IsNullOrEmpty(includeProperties))
+            {
+                foreach (var includeProperty in includeProperties.Split(
+                    new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty.Trim());
+                }
+            }
+
+            return await query.FirstOrDefaultAsync(filter);
+        }
+
         public void Remove(T item)
         {
             _context.Remove(item);
@@ -106,10 +107,16 @@ namespace TenVids.Repository
            _context.RemoveRange(items);
         }
 
-        public void Update(T entity, T destination)
+
+        public void Update(T entity)
         {
-           _context.Entry(entity).CurrentValues.SetValues(destination);
+            // or
+            _context.Entry(entity).State = EntityState.Modified;
         }
+
+       
+
+       
     }
     
 }

@@ -11,9 +11,9 @@ namespace TenVids.Services
     public class ChannelService:IChannelService
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IHttpContextAccessor? _httpContextAccessor;
 
-        public ChannelService(IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor)
+        public ChannelService(IUnitOfWork unitOfWork, IHttpContextAccessor? httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
@@ -21,18 +21,18 @@ namespace TenVids.Services
 
         public async Task<ChannelAddEditVM> GetUserChannelAsync()
         {
-            var userId=_httpContextAccessor.HttpContext?.User.GetUserId();
-            if (string.IsNullOrEmpty(userId)) return new ChannelAddEditVM();
-            var channel = await _unitOfWork.ChannelRepository.GetByUserIdAsync(userId, "Videos,Subscribers");
-
-            return channel == null ? new ChannelAddEditVM() : new ChannelAddEditVM
+            var model=new ChannelAddEditVM();   
+            var channel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == _httpContextAccessor.HttpContext.User.GetUserId());
+            if (channel != null)
             {
-                Name = channel.Name,
-                Description = channel.Description,
-             
-            };
+                model.Name = channel.Name;
+                model.Description = channel.Description;
+                return model;
+            }
+            return null;
+
         }
-     
+
 
         public async Task CreateChannelAsync(ChannelAddEditVM model)
         {
@@ -42,25 +42,25 @@ namespace TenVids.Services
             if (string.IsNullOrEmpty(userId))
                 throw new UnauthorizedAccessException("User not authenticated");
 
-        
+
             if (await _unitOfWork.ChannelRepository.UserHasChannelAsync(userId))
                 throw new InvalidOperationException("You can only create one channel per account");
 
-         
+
             var normalizedName = model.Name?.Trim().ToLower();
             var existingChannel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(c =>
                 c.Name.ToLower() == normalizedName);
 
             if (existingChannel != null)
             {
-          
+
                 if (existingChannel.AppUserId == userId)
                     return;
 
                 throw new InvalidOperationException($"Channel name '{model.Name}' is already taken");
             }
 
-            
+
             var channel = new Channel
             {
                 Name = model.Name.Trim(),
@@ -69,7 +69,7 @@ namespace TenVids.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _unitOfWork.ChannelRepository.CreateAsync(channel);
+             _unitOfWork.ChannelRepository.Add(channel);
             await _unitOfWork.CompleteAsync();
         }
 

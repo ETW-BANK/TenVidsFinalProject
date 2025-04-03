@@ -20,9 +20,9 @@ namespace TenVids.Services.Extensions
             return claimsPrincipal.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty;
         }
 
-        public static string GetUserId(this ClaimsPrincipal claimsPrincipal)
+        public static string? GetUserId(this ClaimsPrincipal claimsPrincipal)
         {
-            return claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty;
+            return claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
     }
 }
