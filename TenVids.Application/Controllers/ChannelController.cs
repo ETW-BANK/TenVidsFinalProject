@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using System.Threading.Tasks;
-using System;
+
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.ViewModels;
+
 
 namespace TenVids.Application.Controllers
 {
@@ -38,33 +40,21 @@ namespace TenVids.Application.Controllers
         {
             if (!ModelState.IsValid)
             {
-                TempData["ChannelModel"] = model; 
-                TempData["error"] = "Please correct the errors below";
+              
                 return RedirectToAction(nameof(Index));
             }
 
-            try
+            var result = await _channelService.CreateChannelAsync(model);
+
+            if (result.Succeeded)
             {
-                await _channelService.CreateChannelAsync(model);
                 TempData["success"] = "Channel created successfully!";
                 return RedirectToAction(nameof(Index));
             }
-            catch (InvalidOperationException ex)
-            {
-                TempData["error"] = ex.Message;
-                TempData["ChannelModel"] = model;
-                return RedirectToAction(nameof(Index));
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return Challenge();
-            }
-            catch (Exception)
-            {
-                TempData["error"] = "An error occurred while creating your channel";
-                TempData["ChannelModel"] = model;
-                return RedirectToAction(nameof(Index));
-            }
+
+            TempData["error"] = result.ErrorMessage;
+            TempData["ChannelModel"] = JsonSerializer.Serialize(model);
+            return RedirectToAction(nameof(Index));
         }
     }
 }

@@ -5,6 +5,7 @@ using TenVids.ViewModels;
 using Microsoft.AspNetCore.Http;
 using TenVids.Services.Extensions;
 using TenVids.Models;
+using TenVids.Utilities;
 
 namespace TenVids.Services
 {
@@ -33,19 +34,17 @@ namespace TenVids.Services
 
         }
 
-
-        public async Task CreateChannelAsync(ChannelAddEditVM model)
+        public async Task<ChannelCreationResult> CreateChannelAsync(ChannelAddEditVM model)
         {
-            if (model == null) throw new ArgumentNullException(nameof(model));
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
 
             var userId = _httpContextAccessor.HttpContext?.User.GetUserId();
             if (string.IsNullOrEmpty(userId))
-                throw new UnauthorizedAccessException("User not authenticated");
-
+                return ChannelCreationResult.Failure("User not authenticated");
 
             if (await _unitOfWork.ChannelRepository.UserHasChannelAsync(userId))
-                throw new InvalidOperationException("You can only create one channel per account");
-
+                return ChannelCreationResult.Failure("You can only create one channel per account");
 
             var normalizedName = model.Name?.Trim().ToLower();
             var existingChannel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(c =>
@@ -53,13 +52,11 @@ namespace TenVids.Services
 
             if (existingChannel != null)
             {
-
                 if (existingChannel.AppUserId == userId)
-                    return;
+                    return ChannelCreationResult.Success(); 
 
-                throw new InvalidOperationException($"Channel name '{model.Name}' is already taken");
+                return ChannelCreationResult.Failure($"Channel name '{model.Name}' is already taken");
             }
-
 
             var channel = new Channel
             {
@@ -69,10 +66,11 @@ namespace TenVids.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-             _unitOfWork.ChannelRepository.Add(channel);
+            _unitOfWork.ChannelRepository.Add(channel);
             await _unitOfWork.CompleteAsync();
-        }
 
+            return ChannelCreationResult.Success();
+        }
         public async Task<bool> UserHasChannelAsync()
         {
             var userId = _httpContextAccessor.HttpContext?.User.GetUserId();
