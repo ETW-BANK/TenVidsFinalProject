@@ -15,7 +15,7 @@ namespace TenVids.ViewModels
         [StringLength(200, MinimumLength = 20, ErrorMessage = "Description should be atleast {2} and Maximum of 200 characters")]
         public string Description { get; set; }
 
-        public List<ErrorModelVM> Errors { get; set; } = new List<ErrorModelVM>();
+        //public List<ErrorModelVM> Errors { get; set; } = new List<ErrorModelVM>();
 
     }
 }

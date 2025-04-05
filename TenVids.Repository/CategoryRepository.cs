@@ -7,11 +7,10 @@ namespace TenVids.Repository
 {
     public class CategoryRepository : Repository<Category>, ICategoryRepository
     {
-        private readonly TenVidsApplicationContext _context;
-
+       
         public CategoryRepository(TenVidsApplicationContext context) : base(context)
         {
-            _context = context;
+          
         }
 
         

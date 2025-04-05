@@ -22,7 +22,7 @@ namespace TenVids.Repository
             bool success = false;  
             if(_context.ChangeTracker.HasChanges())
             {
-                success = await _context.SaveChangesAsync() > 0;
+                success = await _context.SaveChangesAsync()>0;
             }
             return success;
         }

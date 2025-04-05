@@ -11,152 +11,68 @@
     <div class="card-body p-4">
         <div class="row pb-3">
             <div class="col-6">
+                <!-- Left side empty for alignment -->
             </div>
             <div class="col-6 text-end">
-                <a asp-controller="Categories" asp-action="Upsert" class="btn btn-primary">
+                <a asp-controller="Admin" asp-action="Upsert" class="btn btn-primary">
                     <i class="bi bi-plus-circle"></i> Create New Category
                 </a>
             </div>
         </div>
 
-        <table class="table table-bordered table-striped" style="width:100%">
-            <thead>
-                <tr>
-                    <th style="width:10%; text-align:center">Category ID</th>
-                    <th style="width:10%; text-align:center">Category Name</th>
-                    <th style="width:15%; text-align:center">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <!-- Data will be loaded via AJAX -->
-            </tbody>
-        </table>
+        @if (Model == null)
+        {
+            <div class="alert alert-danger" role="alert">
+                Failed to load categories. Please try again later.
+            </div>
+        }
+        else if (!Model.Any())
+        {
+            <div class="alert alert-info" role="alert">
+                No categories found. Would you like to <a asp-controller="Admin" asp-action="Upsert">create one</a>?
+            </div>
+        }
+        else
+        {
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Category Name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)  
+                    {
+                        <tr>
+                            <td>@item.Id</td>
+                            <td>@item.Name</td>
+                            <td>
+                                <div class="w-75 btn-group" role="group">
+                                    <a asp-controller="Admin" asp-action="Upsert" asp-route-id="@item.Id" class="btn btn-primary mx-2">
+                                        <i class="bi bi-pencil-square"></i> Edit
+                                    </a>
+                                    <a asp-controller="Admin" asp-action="Delete" asp-route-id="@item.Id" class="btn btn-danger mx-2">
+                                        <i class="bi bi-trash-fill"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     </div>
 </div>
 
-@* @section Scripts {
-    <script src="~/js/CategoryList.js"></script>
-} *@
-
 @section Scripts {
     <script>
-        var categories = [];
-
-        $(function () {
-            getCategories();
+        $(document).ready(function() {
+            // Delete confirmation
+            $('.btn-danger').click(function() {
+                return confirm('Are you sure you want to delete this category?');
+            });
         });
-
-        function getCategories() {
-            $.ajax({
-                url: "/Admin/GetCategories",
-                type: "GET",
-                success: function (data) {
-                    $('#tableBody').empty();
-                    categories = data.result;
-                    categories.map((value, index) => {
-                        const trTag = `<tr id="trId_${index}"><td></td><td></td><td></td></tr>"`;
-                        $('#tableBody').append(trTag);
-                        displayTableRow('display', index, value.id, value.name);
-                    });
-                }
-            });
-        }
-
-        function displayTableRow(mode, index, id, name) {
-            $('#trId_' + index).empty();
-
-            let innerHtml = "";
-            innerHtml += `<td>${id}</td>`;
-
-            if (mode == 'display') {
-                $('.actions').prop('disabled', false);
-                innerHtml += '<td>';
-                innerHtml += `<input id="inputId_${index}" type="text" class="form-control" value="${name}" disabled />`;
-                innerHtml += '</td>';
-                innerHtml += '<td>';
-                innerHtml += `<button onclick="displayTableRow('edit', ${index}, ${id}, '${name}')" class="btn btn-warning text-white me-2 actions">Edit</button>`;
-                innerHtml += `<button onclick="deleteRecord(${id}, '${name}')" class="btn btn-danger text-white me-2 actions">Delete</button>`;
-                innerHtml += '</td>';
-            } else {
-                $('.actions').prop('disabled', true);
-                innerHtml += '<td>';
-                innerHtml += `<input id="inputId_${index}" type="text" class="form-control" value="${name}" />`;
-                innerHtml += `<span class="text-danger" id="validateionTextId_${index}"></span>`;
-                innerHtml += '</td>';
-                innerHtml += '<td>';
-                innerHtml += `<button onclick="save(${index}, ${id})" class="btn btn-success text-white me-2">Save</button>`;
-                innerHtml += `<button onclick="displayTableRow('display', ${index}, ${id}, '${name}')" class="btn btn-danger text-white">Cancel</button>`;
-                innerHtml += '</td>';
-            }
-
-            $('#trId_' + index).append(innerHtml);
-        }
-
-        function createNewRecord() {
-            $('.actions').prop('disabled', true);
-            const index = categories.length;
-            let innerHtml = `<tr id="trId_${index}">`;
-            innerHtml += '<td></td>';
-            innerHtml += '<td>';
-            innerHtml += `<input type="text" class="form-control" id="inputId_${index}" />`;
-            innerHtml += `<span class="text-danger" id="validateionTextId_${index}"></span>`;
-            innerHtml += '</td>';
-            innerHtml += `<td id="tdActionId_${index}"></td>`;
-            $('#tableBody').append(innerHtml);
-
-            const $tdActionId = $('#tdActionId_' + index);
-            const $saveButton = $('<button class="btn btn-success text-white me-2">Save</button>');
-            const $cancelButton = $('<button class="btn btn-danger text-white">Cancel</button>');
-
-            $tdActionId.append($saveButton);
-            $tdActionId.append($cancelButton);
-
-            $saveButton.on('click', function () {
-                save(index);
-            });
-
-            $cancelButton.on('click', function () {
-                $('#trId_' + index).remove();
-                $('.actions').prop('disabled', false);
-            });
-        }
-
-        function save(index, id) {
-            const name = $('#inputId_' + index).val();
-
-            if (name !== "") {
-                const model = {
-                    id, name
-                };
-
-                $.ajax({
-                    url: "/Admin/AddEditCategory",
-                    type: "POST",
-                    data: model,
-                    success: function (data) {
-                        displayNotification(data.isSuccess, data.title, data.message, 'toastr');
-                        if (data.isSuccess) {
-                            getCategories();
-                        }
-                    }
-                })
-            } else {
-                $('#validateionTextId_' + index).text('Name is required');
-            }
-        }
-
-        async function deleteRecord(id, name) {
-            const result = await confirmation('Are you sure you want to remove ' + name + '?');
-            if (result) {
-                $.ajax({
-                    url: "/Admin/DeleteCategory/" + id,
-                    type: "DELETE",
-                    success: function (data) {
-                        displayNotification(data.isSuccess, data.title, data.message, 'modal');
-                        getCategories();
-                    }
-                });
-            }
-        }
     </script>
 }

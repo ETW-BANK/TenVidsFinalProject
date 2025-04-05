@@ -7,11 +7,10 @@ namespace TenVids.Repository
 {
    public class VideosRepository:Repository<Videos>, IVideosRepository
     {
-        private readonly TenVidsApplicationContext _context;
-
+       
         public VideosRepository(TenVidsApplicationContext context) : base(context)
         {
-            _context = context;
+          
         }
     }
 }

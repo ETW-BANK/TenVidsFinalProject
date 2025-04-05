@@ -1,19 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using TenVids.Data.Access.Data;
+using TenVids.Models;
 using TenVids.Repository.IRepository;
 
 namespace TenVids.Repository
 {
-    public class Repository<T> : IRepository<T> where T : class 
+    public class Repository<T> : IRepository<T> where T : BaseEntity
     {
 
         private readonly TenVidsApplicationContext _context;  
-        internal DbSet<T> _dbSet;    
+        internal DbSet<T> _dbSet; 
+
         public Repository(TenVidsApplicationContext context)
         {
             _context = context;
             _dbSet = _context.Set<T>();
+          
+
         }
 
         public void Add(T entity)
@@ -28,14 +32,14 @@ namespace TenVids.Repository
             return await query.AnyAsync();
         }
 
-        public Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
+        public async Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
         {
             IQueryable<T> query = _dbSet;
             if (filter != null)
             {
                 query = query.Where(filter);
             }
-            return query.CountAsync();  
+            return await query.CountAsync();  
 
         }
 
@@ -44,15 +48,14 @@ namespace TenVids.Repository
             IQueryable<T> query = _dbSet;
 
             if (filter != null)
+            {
                 query = query.Where(filter);
+            }
+              
 
             if (!string.IsNullOrEmpty(includeProperties))
             {
-                foreach (var includeProperty in includeProperties.Split(
-                    new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProperty.Trim());
-                }
+                query = GetWithProperties(query, includeProperties);    
             }
 
             if (orderby != null)
@@ -63,7 +66,17 @@ namespace TenVids.Repository
             return await query.ToListAsync();
         }
 
-      
+        public async Task<T> GetByIdAsync(int id, string includeProperties = null)
+        {
+           IQueryable<T> query = _dbSet;
+
+            if (!string.IsNullOrEmpty(includeProperties))
+            {
+               query = GetWithProperties(query, includeProperties);
+            }
+
+            return await query.Where(x => x.Id == id).FirstOrDefaultAsync();    
+        }
 
         public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null)
         {
@@ -71,30 +84,10 @@ namespace TenVids.Repository
 
             if (!string.IsNullOrEmpty(includeProperties))
             {
-                foreach (var includeProperty in includeProperties.Split(
-                    new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProperty.Trim());
-                }
+               query=GetWithProperties(query, includeProperties);
             }
 
             return await query.Where(filter).FirstOrDefaultAsync(); 
-        }
-
-        public async Task<T> GetSingleAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
-        {
-            IQueryable<T> query = tracked ? _dbSet : _dbSet.AsNoTracking();
-
-            if (!string.IsNullOrEmpty(includeProperties))
-            {
-                foreach (var includeProperty in includeProperties.Split(
-                    new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProperty.Trim());
-                }
-            }
-
-            return await query.FirstOrDefaultAsync(filter);
         }
 
         public void Remove(T item)
@@ -107,16 +100,24 @@ namespace TenVids.Repository
            _context.RemoveRange(items);
         }
 
-
-        public void Update(T entity)
+        public void Update(T entity, T destination)
         {
-            // or
-            _context.Entry(entity).State = EntityState.Modified;
+            _context.Entry(entity).CurrentValues.SetValues(destination);
         }
 
-       
+        #region Static Method
+        public static IQueryable<T> GetWithProperties(IQueryable<T> query, string includeProperties)
+        {
+           var prop=includeProperties.Split(
+                              new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
 
-       
+            return query;
+        }
+        #endregion
     }
-    
+
+
+
 }
+
+

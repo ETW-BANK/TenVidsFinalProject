@@ -1,7 +1,7 @@
 ﻿@model ChannelAddEditVM
 
 
-@if (TempData["Error"] != null)
+@* @if (TempData["Error"] != null)
 {
     <div class="alert alert-danger">
         @TempData["Error"]
@@ -13,7 +13,7 @@
     <div class="alert alert-success">
         @TempData["Success"]
     </div>
-}
+} *@
 @if (string.IsNullOrEmpty(Model.Name))
 {
     <div class="card">

@@ -5,10 +5,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace TenVids.Models
 {
-   public class Videos
+   public class Videos:BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
+        
 
         [Required]
         public string? Thumbnail { get; set; }

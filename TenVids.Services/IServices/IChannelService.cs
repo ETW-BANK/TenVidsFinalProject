@@ -8,6 +8,6 @@ namespace TenVids.Services.IServices
     {
         Task<ChannelAddEditVM> GetUserChannelAsync();
         Task<ChannelCreationResult> CreateChannelAsync(ChannelAddEditVM model);
-        Task<bool> UserHasChannelAsync();
+        
     }
 }

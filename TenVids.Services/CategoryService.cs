@@ -15,29 +15,87 @@ namespace TenVids.Services
             _unitOfWork = unitOfWork;
         }
 
-        public Task CreateCategoryAsync(CategoryVM categoryVM)
+        public async Task CreateCategoryAsync(CategoryVM categoryVM)
         {
-            throw new NotImplementedException();
+            if (string.IsNullOrWhiteSpace(categoryVM.Name))
+            {
+                throw new ArgumentException("Category name cannot be empty");
+            }
+
+            var category = new Category
+            {
+                Name = categoryVM.Name.Trim(),
+              
+            };
+
+            _unitOfWork.CategoryRepository.Add(category);
+            await _unitOfWork.CompleteAsync();
         }
 
-        public Task<bool> DeleteCategoryAsync(int id)
+        public async Task DeleteCategoryAsync(Category category)
         {
-            throw new NotImplementedException();
+          category = _unitOfWork.CategoryRepository.GetFirstOrDefaultAsync(c => c.Id == category.Id).Result;
+
+            if (category==null)
+            {
+                throw new Exception("Category not found.");
+            }
+         
+            _unitOfWork.CategoryRepository.Remove(category);
+            await _unitOfWork.CompleteAsync();
+
         }
 
-        public Task<IEnumerable<CategoryVM>> GetAllCategoriesAsync()
+        public async Task<IEnumerable<CategoryVM>> GetAllCategoriesAsync()
         {
-            throw new NotImplementedException();
+            var result=await _unitOfWork.CategoryRepository.GetAllAsync();
+            result = result.OrderBy(c => c.Name);
+            if (result == null)
+            {
+                return null;
+            }
+            return result.Select(c => new CategoryVM
+            {
+                Id = c.Id,
+                Name = c.Name,
+               
+            }).ToList();
         }
 
-        public Task<CategoryVM> GetCategoryByIdAsync(int id)
+        public Task<Category> GetCategoryByIdAsync(int id)
         {
-            throw new NotImplementedException();
+            var category = _unitOfWork.CategoryRepository.GetFirstOrDefaultAsync(c => c.Id == id);
+            if (category == null)
+            {
+                throw new Exception("Category not found.");
+            }
+
+
+            return category;
         }
 
-        public Task UpdateCategoryAsync(CategoryVM categoryVM)
+        public async void UpdateCategoryAsync(Category category)
         {
-            throw new NotImplementedException();
+            category =await _unitOfWork.CategoryRepository.GetByIdAsync(category.Id);
+
+            if (category == null)
+            {
+                throw new Exception("Category not found.");
+            }
+            if (string.IsNullOrWhiteSpace(category.Name))
+            {
+                throw new ArgumentException("Category name cannot be empty");
+            }
+            var categoryToUpdate = new Category
+            {
+                Id = category.Id,
+                Name = category.Name
+
+            };  
+
+
+            _unitOfWork.CategoryRepository.Update(category,categoryToUpdate);
+            await  _unitOfWork.CompleteAsync();
         }
     }
 }

@@ -9,11 +9,9 @@ using System.Threading.Tasks;
 
 namespace TenVids.Models
 {
-    public class Channel
+    public class Channel:BaseEntity
     {
-        [Key]
-        public int Id { get; set; }
-
+      
         [Required]
         public string Name { get; set; }
         public string Description { get; set; }
