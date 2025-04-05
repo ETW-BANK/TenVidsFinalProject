@@ -35,13 +35,13 @@ namespace TenVids.Services
 
         }
 
-        public async Task<ChannelCreationResult> CreateChannelAsync(ChannelAddEditVM model)
+        public async Task<ErrorModel<Channel>> CreateChannelAsync(ChannelAddEditVM model)
         {
             var ChannelExists= await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x=>x.Name==model.Name);
 
             if (ChannelExists != null)
             {
-                return ChannelCreationResult.Failure("A channel with this name already exists.");
+                return ErrorModel<Channel>.Failure("Channel with this name already exists.",409);
             }
             var newchannel = new Channel
             {
@@ -52,7 +52,7 @@ namespace TenVids.Services
             _unitOfWork.ChannelRepository.Add(newchannel);
            await _unitOfWork.CompleteAsync();
 
-            return ChannelCreationResult.Success();
+            return ErrorModel<Channel>.Success(newchannel,"Channel Created Succesfully");
 
         }
        

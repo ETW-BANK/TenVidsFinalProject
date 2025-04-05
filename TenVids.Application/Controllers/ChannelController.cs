@@ -45,13 +45,13 @@ namespace TenVids.Application.Controllers
 
             var result = await _channelService.CreateChannelAsync(model);
 
-            if (result.Succeeded)
+            if (result.IsSuccess)
             {
-                TempData["success"] = "Channel created successfully!";
+                TempData["success"] = result.Message;
                 return RedirectToAction(nameof(Index));
             }
 
-            TempData["error"] = result.ErrorMessage;
+            TempData["error"] = result.Message;
             TempData["ChannelModel"] = JsonSerializer.Serialize(model);
             return RedirectToAction(nameof(Index));
         }
