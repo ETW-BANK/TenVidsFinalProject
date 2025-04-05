@@ -5,7 +5,7 @@ namespace TenVids.ViewModels
 {
     public class ChannelAddEditVM
     {
-
+        public int Id { get; set; }
         [Required]
         [Display(Name = "Channel Name")]
         [RegularExpression(@"^[a-zA-Z0-9]{3,15}", ErrorMessage = "Only Alphabets and Numbers are allowed")]

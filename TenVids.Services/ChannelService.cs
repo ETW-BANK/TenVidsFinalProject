@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using TenVids.Services.Extensions;
 using TenVids.Models;
 using TenVids.Utilities;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace TenVids.Services
@@ -55,6 +56,75 @@ namespace TenVids.Services
             return ErrorModel<Channel>.Success(newchannel,"Channel Created Succesfully");
 
         }
-       
+        public async Task<ErrorModel<Channel>> UpdateChannelAsync(ChannelAddEditVM model)
+        {
+        
+            if (string.IsNullOrWhiteSpace(model.Name))
+            {
+                return ErrorModel<Channel>.Failure("Channel name cannot be empty.", 400);
+            }
+
+            var currentUserId = _httpContextAccessor.HttpContext.User.GetUserId();
+
+            var existingChannel = await _unitOfWork.ChannelRepository
+                .GetFirstOrDefaultAsync(x => x.AppUserId == currentUserId, tracked: true);
+
+            if (existingChannel == null)
+            {
+                return ErrorModel<Channel>.Failure("You don't have a channel to update.", 404);
+            }
+            var normalizedName = model.Name.Trim().ToLower();
+            if (!existingChannel.Name.Equals(normalizedName, StringComparison.OrdinalIgnoreCase))
+            {
+                var duplicateExists = await _unitOfWork.ChannelRepository
+                    .GetFirstOrDefaultAsync(x =>
+                        x.Name.ToLower() == normalizedName &&
+                        x.Id != existingChannel.Id);
+
+                if (duplicateExists != null)
+                {
+                    return ErrorModel<Channel>.Failure("Channel name already exists.", 409);
+                }
+            }
+
+            existingChannel.Name = model.Name.Trim();
+            existingChannel.Description = model.Description?.Trim();
+
+            try
+            {
+                await _unitOfWork.CompleteAsync();
+                return ErrorModel<Channel>.Success(existingChannel, "Channel updated successfully");
+            }
+            catch (DbUpdateException ex)
+            {
+                
+                return ErrorModel<Channel>.Failure("Failed to update channel.", 500);
+            }
+        }
+
+        public async Task DeleteChannelAsync(Channel model)
+        {
+            model = _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(c => c.Id == model.Id).Result;
+
+            if (model== null)
+            {
+                throw new Exception("Channel not found.");
+            }
+
+            _unitOfWork.ChannelRepository.Remove(model);
+            await _unitOfWork.CompleteAsync();
+        }
+
+        public Task<Channel> GetChannelByIdAsync(int id)
+        {
+            var channel = _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(c => c.Id == id);
+            if (channel == null)
+            {
+                throw new Exception("Category not found.");
+            }
+
+
+            return channel;
+        }
     }
 }
