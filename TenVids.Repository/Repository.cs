@@ -78,9 +78,9 @@ namespace TenVids.Repository
             return await query.Where(x => x.Id == id).FirstOrDefaultAsync();    
         }
 
-        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null)
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
         {
-            IQueryable<T> query = _dbSet;
+            IQueryable<T> query = tracked ? _dbSet : _dbSet.AsNoTracking();
 
             if (!string.IsNullOrEmpty(includeProperties))
             {
@@ -104,7 +104,10 @@ namespace TenVids.Repository
         {
             _context.Entry(entity).CurrentValues.SetValues(destination);
         }
-
+        public void UpdateAsync(T entity)
+        {
+            _context.Update(entity);
+        }
         #region Static Method
         public static IQueryable<T> GetWithProperties(IQueryable<T> query, string includeProperties)
         {
@@ -113,6 +116,8 @@ namespace TenVids.Repository
 
             return query;
         }
+
+        
         #endregion
     }
 

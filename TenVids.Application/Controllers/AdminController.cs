@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TenVids.Models;
 using TenVids.Services.IServices;
@@ -12,7 +10,7 @@ using TenVids.ViewModels;
 
 namespace TenVids.Application.Controllers
 {
-    [Authorize(Roles =$"{SD.AdminRole}")]
+    [Authorize(Roles = $"{SD.AdminRole}")]
     public class AdminController : Controller
     {
         private readonly ICategoryService _categoryService;
@@ -27,64 +25,63 @@ namespace TenVids.Application.Controllers
             return View(categories);
         }
         [HttpGet]
-        public IActionResult Upsert(int? id)
+        public async Task<IActionResult> Upsert(int? id)
         {
             CategoryVM categoryVM = new();
 
             if (id == null || id == 0)
             {
-
+               
                 return View(categoryVM);
             }
             else
             {
-
-                var category = _categoryService.GetCategoryByIdAsync(categoryVM.Id);
+                
+                var category = await _categoryService.GetCategoryByIdAsync(id.Value);
                 if (category == null)
                 {
                     return NotFound();
                 }
 
                 categoryVM.Id = category.Id;
-              
-              
-
+                categoryVM.Name = category.Name;
+                
                 return View(categoryVM);
             }
         }
         [HttpPost]
-        public async Task<IActionResult> Upsert(Category category)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Upsert(CategoryVM model)
         {
             if (!ModelState.IsValid)
             {
-                return View(category);
+                TempData["error"] = "Invalid category data.";
+                TempData["CategoryModel"] = JsonSerializer.Serialize(model);
+                return RedirectToAction(nameof(Upsert));
             }
 
-            try
-            {
-                if (category.Id == 0)
-                {
-                    //await _categoryService.CreateCategoryAsync(category);
-                    TempData["success"] = "Category created successfully.";
-                }
-                else
-                {
-                    _categoryService.UpdateCategoryAsync(category);
-                    TempData["success"] = "Category updated successfully.";
-                }
+            ErrorModel<Category> result;
 
-                return RedirectToAction(nameof(Category));
-            }
-            catch (ArgumentException ex)
+            if (model.Id == 0)
             {
-                ModelState.AddModelError("Name", ex.Message);
-                return View(category);
+                result = await _categoryService.CreateCategoryAsync(model);
             }
-            catch (Exception ex)
+            else
             {
-                TempData["error"] = $"An error occurred: {ex.Message}";
-                return View(category);
+                result = await _categoryService.UpdateCategoryAsync(model);
             }
+
+            if (result.IsSuccess)
+            {
+                TempData["success"] = result.Message;
+            }
+            else
+            {
+                TempData["error"] = result.Message;
+                TempData["CategoryModel"] = JsonSerializer.Serialize(model);
+            }
+
+            return RedirectToAction(nameof(Category));
         }
 
         public IActionResult Delete(int? id)
@@ -115,58 +112,10 @@ namespace TenVids.Application.Controllers
             }
             await _categoryService.DeleteCategoryAsync(category.Result);
             TempData["success"] = "Category deleted successfully!";
-            return RedirectToAction(nameof(Index));
-        }
-    
-
-    #region API CALLS
-    [HttpGet]
-        public async Task<IActionResult> GetCategories()
-        {
-            var categories = await _categoryService.GetAllCategoriesAsync();
-            return Json(new ApiResponse(200,result:categories));
+            return RedirectToAction(nameof(Category));
         }
 
-
-        //[HttpPost]
-        //public  IActionResult AddEditCategory(Category category)
-        //{
-        
-        //    if (!ModelState.IsValid)
-        //    {
-        //        var errors = ModelState.Values
-        //            .SelectMany(v => v.Errors)
-        //            .Select(e => e.ErrorMessage)
-        //            .ToList();
-
-        //        return Json(new ApiResponse(400, "Validation errors", errors));
-        //    }
-
-        //    try
-        //    {
-        //        if (category.Id == 0)
-        //        {
-        //            var createdCategory =  _categoryService.CreateCategoryAsync(category);
-        //            return Json(new ApiResponse(200, "Category created successfully", createdCategory));
-        //        }
-        //        else
-        //        {
-        //            _categoryService.UpdateCategoryAsync(category);
-        //            return Json(new ApiResponse(200, "Category updated successfully"));
-        //        }
-        //    }
-        //    catch (KeyNotFoundException ex)
-        //    {
-        //        return Json(new ApiResponse(404, ex.Message));
-        //    }
-        //    catch (Exception ex)
-        //    {
-          
-              
-        //        return Json(new ApiResponse(500, "An error occurred while processing your request"));
-        //    }
-        //}
-
-        #endregion
     }
 }
+    
+

@@ -1,4 +1,5 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
 using TenVids.Data.Access.Data;
 using TenVids.Repository.IRepository;
 
@@ -19,12 +20,17 @@ namespace TenVids.Repository
       public ICategoryRepository CategoryRepository => new CategoryRepository(_context);
         public async Task<bool> CompleteAsync()
         {
-            bool success = false;  
-            if(_context.ChangeTracker.HasChanges())
+            try
             {
-                success = await _context.SaveChangesAsync()>0;
+                // Always attempt to save changes regardless of HasChanges()
+                int changes = await _context.SaveChangesAsync();
+                return true; // EF Core will throw if there are problems
             }
-            return success;
+            catch (DbUpdateException)
+            {
+                // Log the exception if needed
+                return false;
+            }
         }
 
         public void Dispose()

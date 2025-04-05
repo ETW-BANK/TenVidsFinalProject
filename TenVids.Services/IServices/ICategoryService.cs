@@ -1,6 +1,7 @@
 ﻿
 
 using TenVids.Models;
+using TenVids.Utilities;
 using TenVids.ViewModels;
 
 namespace TenVids.Services.IServices
@@ -10,8 +11,8 @@ namespace TenVids.Services.IServices
 
         Task<IEnumerable<CategoryVM>> GetAllCategoriesAsync();
         Task<Category> GetCategoryByIdAsync(int id);
-        Task CreateCategoryAsync(CategoryVM categoryVM);
-        void UpdateCategoryAsync(Category category);
+        Task<ErrorModel<Category>> CreateCategoryAsync(CategoryVM model);
+        Task<ErrorModel<Category>> UpdateCategoryAsync(CategoryVM model);
         Task DeleteCategoryAsync(Category category);
 
 
