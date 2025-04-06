@@ -24,12 +24,17 @@ namespace TenVids.Application.Controllers
             if (!await _videosService.UserHasChannelAsync())
             {
                 TempData["error"] = "You need to create a channel first";
-                return RedirectToAction("Create", "Channel");
+                return RedirectToAction("CreateChannel", "Channel");
             }
 
             try
             {
                 var videoVM = await _videosService.GetVideoByIdAsync(id);
+                if (videoVM == null)
+                {
+                    TempData["error"] = "Video not found";
+                    return RedirectToAction("Index", "Channel");
+                }
                 return View(videoVM);
             }
             catch (InvalidOperationException ex)

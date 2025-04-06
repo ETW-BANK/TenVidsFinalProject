@@ -1,31 +1,36 @@
 ﻿
-using Microsoft.Extensions.Configuration;
+
+using Microsoft.Extensions.Options;
+using TenVids.Utilities;
 
 namespace TenVids.FileManupliation.Helpers
 {
-    public class FileTypeHelper:IFileTypeHelper
+    public class FileTypeHelper : IFileTypeHelper
     {
-        private readonly IConfiguration Configeration;
-        
-        public FileTypeHelper(IConfiguration config)
+        private readonly FileUploadConfig _config;
+
+        public FileTypeHelper(IOptions<FileUploadConfig> config)
         {
-            Configeration = config;
+            _config = config.Value;
         }
 
-        public string[] AcceptableContentTypes(string type)
+        public IEnumerable<string> AcceptableContentTypes(string type)
         {
-           if(type.Equals("image"))
+            return type?.ToLower() switch
             {
-                return Configeration.GetSection("FileUpload:ImageContentTypes").Get<string[]>()!;
-
-            }
-            else
-            {
-                return Configeration.GetSection("FileUpload:VideoContentTypes").Get<string[]>()!;
-
-            }
+                "image" => _config.ImageContentTypes ?? Array.Empty<string>(),
+                "video" => _config.VideoContentTypes ?? Array.Empty<string>(),
+                _ => Array.Empty<string>()
+            };
         }
 
-      
+        public bool IsAcceptableContentType(string type, string contentType)
+        {
+            if (string.IsNullOrEmpty(contentType) || string.IsNullOrEmpty(type))
+                return false;
+
+            var allowedTypes = AcceptableContentTypes(type);
+            return allowedTypes.Contains(contentType, StringComparer.OrdinalIgnoreCase);
+        }
     }
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
+using Microsoft.Extensions.Options;
 using TenVids.Data.Access.Data;
 using TenVids.FileManupliation.Helpers;
 using TenVids.Models;
@@ -12,6 +12,7 @@ using TenVids.Repository;
 using TenVids.Repository.IRepository;
 using TenVids.Services;
 using TenVids.Services.IServices;
+using TenVids.Utilities;
 using TenVids.Utilities.Mapper;
 
 namespace TenVids.Service.Extensions
@@ -26,13 +27,15 @@ namespace TenVids.Service.Extensions
             services.AddScoped<IVideosService, VideosService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IChannelService, ChannelService>();
-             services.AddSingleton<IFileTypeHelper, FileTypeHelper>();
+            services.Configure<FileUploadConfig>(configuration.GetSection("FileUpload"));
+            services.AddSingleton<IFileTypeHelper, FileTypeHelper>();
             services.AddHttpContextAccessor();
             services.AddSingleton<IMapper>(new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<VideoProfile>();
              
             }).CreateMapper());
+   
             var connectionString = configuration.GetConnectionString("TenVidDb");
             services.AddDbContext<TenVidsApplicationContext>(options =>
                 options.UseSqlServer(connectionString));

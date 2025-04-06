@@ -13,4 +13,8 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TenVids.Utilities\TenVids.Utilities.csproj" />
+  </ItemGroup>
+
 </Project>

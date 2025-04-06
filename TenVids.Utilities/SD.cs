@@ -13,5 +13,6 @@ namespace TenVids.Utilities
         public const string ModeratorRole = "Moderator";
         public const string UserRole = "User";
         public static readonly List<string> Roles = new List<string> { AdminRole, ModeratorRole, UserRole };
+        public const int fileSizeLimit = 10485760; // 10 MB
     }
 }
