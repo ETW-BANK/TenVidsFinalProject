@@ -4,9 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using TenVids.Data.Access.Data;
-using TenVids.FileManupliation.Helpers;
 using TenVids.Models;
 using TenVids.Repository;
 using TenVids.Repository.IRepository;
@@ -21,6 +19,14 @@ namespace TenVids.Service.Extensions
     {
         public void RegisterServices(IServiceCollection services, IConfiguration configuration)
         {
+            var env = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            var configBuilder = new ConfigurationBuilder()
+             .SetBasePath(Directory.GetCurrentDirectory())
+              .AddJsonFile("appsettings.json", optional: false)
+             .AddJsonFile($"appsettings.{env}.json", optional: true)
+             .AddEnvironmentVariables();
+            var config = configBuilder.Build();
+
             services.AddControllersWithViews();
             services.AddScoped<IAccountService, AccountService>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -28,7 +34,6 @@ namespace TenVids.Service.Extensions
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IChannelService, ChannelService>();
             services.Configure<FileUploadConfig>(configuration.GetSection("FileUpload"));
-            services.AddSingleton<IFileTypeHelper, FileTypeHelper>();
             services.AddHttpContextAccessor();
             services.AddSingleton<IMapper>(new MapperConfiguration(cfg =>
             {

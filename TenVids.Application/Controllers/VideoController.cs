@@ -64,7 +64,7 @@ namespace TenVids.Application.Controllers
             }
 
             TempData["success"] = result.Message;
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Channel");
         }
     }
 }

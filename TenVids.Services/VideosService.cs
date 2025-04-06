@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using TenVids.FileManupliation.Helpers;
 using TenVids.Models;
 using TenVids.Repository.IRepository;
 using TenVids.Services.Extensions;
@@ -12,22 +10,22 @@ using TenVids.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
+
 namespace TenVids.Services
 {
     public class VideosService: IVideosService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor? _httpContextAccessor;
-        private readonly IFileTypeHelper _fileTypeHelper;
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly FileUploadConfig _fileUploadConfig;
 
-        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor, IFileTypeHelper fileTypeHelper,IMapper mapper,IConfiguration configuration, IOptions<FileUploadConfig> fileUploadConfig)
+        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor, IMapper mapper,IConfiguration configuration, IOptions<FileUploadConfig> fileUploadConfig)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
-            _fileTypeHelper = fileTypeHelper;
+          
             _mapper = mapper;
             _configuration = configuration;
             _fileUploadConfig = fileUploadConfig.Value;   
@@ -56,100 +54,50 @@ namespace TenVids.Services
                 }
             }
 
-            
-            // Validate image
-            if (model.ImageUpload == null)
-                return ErrorModel<Videos>.Failure("Image is required", 400);
 
-            if (!_fileTypeHelper.IsAcceptableContentType("image", model.ImageUpload.ContentType))
+            if (model.ImageUpload == null)
+                return ErrorModel<Videos>.Failure("Image thumbnail is required", 400);
+
+            if (!IsAcceptableContentType("image", model.ImageUpload.ContentType))
             {
-                var allowed = _fileTypeHelper.AcceptableContentTypes("image");
+                var allowedTypes = AcceptableContentTypes("image");
                 return ErrorModel<Videos>.Failure(
-                    $"Invalid image type. Allowed: {string.Join(", ", allowed)}",
+                    $"Invalid image type. Allowed: {string.Join(", ", allowedTypes)}",
                     400);
             }
 
             if (model.ImageUpload.Length > _fileUploadConfig.ImageMaxSizeInMB * SD.fileSizeLimit)
-            {
                 return ErrorModel<Videos>.Failure(
                     $"Image exceeds maximum size of {_fileUploadConfig.ImageMaxSizeInMB}MB",
                     400);
-            }
 
-            // Validate video
             if (model.VideoUpload == null)
-                return ErrorModel<Videos>.Failure("Video is required", 400);
+                return ErrorModel<Videos>.Failure("Video file is required", 400);
 
-            if (!_fileTypeHelper.IsAcceptableContentType("video", model.VideoUpload.ContentType))
+            if (!IsAcceptableContentType("video", model.VideoUpload.ContentType))
             {
-                var allowed = _fileTypeHelper.AcceptableContentTypes("video");
+                var allowedTypes = AcceptableContentTypes("video");
                 return ErrorModel<Videos>.Failure(
-                    $"Invalid video type. Allowed: {string.Join(", ", allowed)}",
+                    $"Invalid video type. Allowed: {string.Join(", ", allowedTypes)}",
                     400);
             }
 
             if (model.VideoUpload.Length > _fileUploadConfig.VideoMaxSizeInMB * SD.fileSizeLimit)
-            {
                 return ErrorModel<Videos>.Failure(
                     $"Video exceeds maximum size of {_fileUploadConfig.VideoMaxSizeInMB}MB",
                     400);
-            }
 
             // Process files
-            byte[] thumbnailBytes;
-            using (var memoryStream = new MemoryStream())
-            {
-                await model.ImageUpload.CopyToAsync(memoryStream);
-                thumbnailBytes = memoryStream.ToArray();
-            }
-
-            byte[] videoBytes;
-            using (var memoryStream = new MemoryStream())
-            {
-                await model.VideoUpload.CopyToAsync(memoryStream);
-                videoBytes = memoryStream.ToArray();
-            }
+            var (thumbnailBytes, videoBytes) = await ProcessUploadedFiles(model);
 
             // Create or update video
             if (model.Id == 0)
             {
-                // Create new video
-                var newVideo = new Videos
-                {
-                    Title = model.Title,
-                    Description = model.Description,
-                    CategoryId = model.CategoryId,
-                    ChannelId = userChannel.Id,
-                    Thumbnail = Convert.ToBase64String(thumbnailBytes),
-                    ContentType = model.VideoUpload.ContentType,
-                    Contents = videoBytes,
-                    
-                };
-
-                _unitOfWork.VideosRepository.Add(newVideo);
-                await _unitOfWork.CompleteAsync();
-                return ErrorModel<Videos>.Success(newVideo,"Video created successfully");
+                return await CreateNewVideo(model, userChannel.Id, thumbnailBytes, videoBytes);
             }
             else
             {
-                // Update existing video
-                var existingVideo = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
-                if (existingVideo == null)
-                {
-                    return ErrorModel<Videos>.Failure("Video not found", 404);
-                }
-
-                existingVideo.Title = model.Title;
-                existingVideo.Description = model.Description;
-                existingVideo.CategoryId = model.CategoryId;
-                existingVideo.Thumbnail = Convert.ToBase64String(thumbnailBytes);
-                existingVideo.ContentType = model.VideoUpload.ContentType;
-                existingVideo.Contents = videoBytes;
-              
-
-                _unitOfWork.VideosRepository.UpdateAsync(existingVideo);
-                await _unitOfWork.CompleteAsync();
-                return ErrorModel<Videos>.Success(existingVideo,"Video updated successfully" );
+                return await UpdateExistingVideo(model, thumbnailBytes, videoBytes);
             }
         }
         public async Task<VideoVM> GetVideoByIdAsync(int? id)
@@ -159,8 +107,8 @@ namespace TenVids.Services
                 return null;
             }
 
-            var imageTypes = _fileTypeHelper.AcceptableContentTypes("image") ?? Array.Empty<string>();
-            var videoTypes = _fileTypeHelper.AcceptableContentTypes("video") ?? Array.Empty<string>();
+            var imageTypes = AcceptableContentTypes("image") ?? Array.Empty<string>();
+            var videoTypes = AcceptableContentTypes("video") ?? Array.Empty<string>();
 
             var videoVM = new VideoVM
             {
@@ -218,7 +166,24 @@ namespace TenVids.Services
         }
 
         #region Private Method
+        private async Task<(byte[] thumbnailBytes, byte[] videoBytes)> ProcessUploadedFiles(VideoVM model)
+        {
+            byte[] thumbnailBytes;
+            using (var memoryStream = new MemoryStream())
+            {
+                await model.ImageUpload.CopyToAsync(memoryStream);
+                thumbnailBytes = memoryStream.ToArray();
+            }
 
+            byte[] videoBytes;
+            using (var memoryStream = new MemoryStream())
+            {
+                await model.VideoUpload.CopyToAsync(memoryStream);
+                videoBytes = memoryStream.ToArray();
+            }
+
+            return (thumbnailBytes, videoBytes);
+        }
         private async Task<IEnumerable<SelectListItem>> GetCategoryListAsync()
         {
             var categories = await _unitOfWork.CategoryRepository.GetAllAsync();
@@ -230,7 +195,71 @@ namespace TenVids.Services
             });
         }
 
-        
+        private string[] AcceptableContentTypes(string type)
+        {
+            if (type.Equals("image"))
+            {
+                return _configuration.GetSection("FileUpload:ImageContentTypes").Get<string[]>();
+            }
+            else
+            {
+                return _configuration.GetSection("FileUpload:VideoContentTypes").Get<string[]>();
+            }
+        }
+
+        private bool IsAcceptableContentType(string type, string contentType)
+        {
+            var allowedContentTypes = AcceptableContentTypes(type);
+            foreach (var allowedContentType in allowedContentTypes)
+            {
+                if (contentType.ToLower().Equals(allowedContentType.ToLower()))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+        private async Task<ErrorModel<Videos>> CreateNewVideo(
+          VideoVM model, int channelId, byte[] thumbnailBytes, byte[] videoBytes)
+        {
+            var newVideo = new Videos
+            {
+                Title = model.Title,
+                Description = model.Description,
+                CategoryId = model.CategoryId,
+                ChannelId = channelId,
+                Thumbnail = Convert.ToBase64String(thumbnailBytes),
+                ContentType = model.VideoUpload.ContentType,
+                Contents = videoBytes,
+              
+            };
+
+            _unitOfWork.VideosRepository.Add(newVideo);
+            await _unitOfWork.CompleteAsync();
+            return ErrorModel<Videos>.Success(newVideo, "Video created successfully");
+        }
+
+        private async Task<ErrorModel<Videos>> UpdateExistingVideo(
+            VideoVM model, byte[] thumbnailBytes, byte[] videoBytes)
+        {
+            var existingVideo = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
+            if (existingVideo == null)
+                return ErrorModel<Videos>.Failure("Video not found", 404);
+
+            existingVideo.Title = model.Title;
+            existingVideo.Description = model.Description;
+            existingVideo.CategoryId = model.CategoryId;
+            existingVideo.Thumbnail = Convert.ToBase64String(thumbnailBytes);
+            existingVideo.ContentType = model.VideoUpload.ContentType;
+            existingVideo.Contents = videoBytes;
+          
+
+            _unitOfWork.VideosRepository.UpdateAsync(existingVideo);
+            await _unitOfWork.CompleteAsync();
+            return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
+        }
+
 
         #endregion
     }
