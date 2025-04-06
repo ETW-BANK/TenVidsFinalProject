@@ -63,7 +63,9 @@ else
     <!-- Tab Content -->
     <div class="tab-content">
         <div class="tab-pane fade" id="myvideos">
-            <div class="mt-3">My Videos</div>
+            <div class="mt-3"/>
+                 <a class="btn btn-primary" asp-controller="Video" asp-action="Upsert">Create Video</a>
+            </div>
         </div>
 
         <div class="tab-pane fade" id="analytics">
@@ -120,7 +122,7 @@ else
                 </form>
             </div>
         </div>
-    </div>
+  
 }
 
 @section Scripts {

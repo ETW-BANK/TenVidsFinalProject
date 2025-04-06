@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="8.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.14" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.14" />
@@ -24,6 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TenVids.Models\TenVids.Models.csproj" />
+    <ProjectReference Include="..\TenVids.ViewModels\TenVids.ViewModels.csproj" />
   </ItemGroup>
 
 </Project>

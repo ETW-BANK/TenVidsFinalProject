@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TenVids.Application\TenVids.Application.csproj" />
+    <ProjectReference Include="..\TenVids.Data.Access\TenVids.Data.Access.csproj" />
+    <ProjectReference Include="..\TenVids.Models\TenVids.Models.csproj" />
+    <ProjectReference Include="..\TenVids.Repository\TenVids.Repository.csproj" />
+    <ProjectReference Include="..\TenVids.Service.Extensions\TenVids.Service.Extensions.csproj" />
+    <ProjectReference Include="..\TenVids.Services\TenVids.Services.csproj" />
+    <ProjectReference Include="..\TenVids.UnitTests\TenVids.UnitTests.csproj" />
+    <ProjectReference Include="..\TenVids.Utilities\TenVids.Utilities.csproj" />
+    <ProjectReference Include="..\TenVids.ViewModels\TenVids.ViewModels.csproj" />
+  </ItemGroup>
+
+</Project>

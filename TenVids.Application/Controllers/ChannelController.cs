@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Threading.Tasks;
-using TenVids.Models;
-using TenVids.Services;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.ViewModels;

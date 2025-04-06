@@ -9,6 +9,8 @@ using TenVids.Data.Access.Data;
 using TenVids.Data.Access;
 using TenVids.Models;
 using TenVids.Service.Extensions;
+using TenVids.Utilities;
+using TenVids.FileManupliation.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 

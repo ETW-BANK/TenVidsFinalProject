@@ -35,7 +35,7 @@ namespace TenVids.Services
         public async Task<IEnumerable<CategoryVM>> GetAllCategoriesAsync()
         {
             var result=await _unitOfWork.CategoryRepository.GetAllAsync();
-            result = result.OrderBy(c => c.Name);
+            result = result.OrderBy(c => c.Id);
             if (result == null)
             {
                 return null;

@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TenVids.Data.Access\TenVids.Data.Access.csproj" />
+    <ProjectReference Include="..\TenVids.FileManupliation.Helpers\TenVids.FileManupliation.Helpers.csproj" />
     <ProjectReference Include="..\TenVids.Models\TenVids.Models.csproj" />
     <ProjectReference Include="..\TenVids.Repository\TenVids.Repository.csproj" />
     <ProjectReference Include="..\TenVids.Utilities\TenVids.Utilities.csproj" />

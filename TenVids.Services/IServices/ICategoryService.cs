@@ -1,5 +1,4 @@
 ﻿
-
 using TenVids.Models;
 using TenVids.Utilities;
 using TenVids.ViewModels;
@@ -14,6 +13,7 @@ namespace TenVids.Services.IServices
         Task<ErrorModel<Category>> CreateCategoryAsync(CategoryVM model);
         Task<ErrorModel<Category>> UpdateCategoryAsync(CategoryVM model);
         Task DeleteCategoryAsync(Category category);
+      
 
 
     }

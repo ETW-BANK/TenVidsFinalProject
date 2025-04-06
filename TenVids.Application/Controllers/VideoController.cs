@@ -1,0 +1,65 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
+using TenVids.Services.IServices;
+using TenVids.Utilities;
+using TenVids.ViewModels;
+
+namespace TenVids.Application.Controllers
+{
+    [Authorize(Roles = $"{SD.UserRole}")]
+    public class VideoController : Controller
+    {
+
+        private readonly IVideosService _videosService;
+
+        public VideoController(IVideosService videosService)
+        {
+            _videosService = videosService;
+        }
+        [HttpGet]
+        public async Task<IActionResult> Upsert(int id)
+        {
+            if (!await _videosService.UserHasChannelAsync())
+            {
+                TempData["error"] = "You need to create a channel first";
+                return RedirectToAction("Create", "Channel");
+            }
+
+            try
+            {
+                var videoVM = await _videosService.GetVideoByIdAsync(id);
+                return View(videoVM);
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["error"] = ex.Message;
+                return RedirectToAction("Index", "Home");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Upsert(VideoVM videoVM)
+        {
+            if (!ModelState.IsValid)
+            {
+                videoVM = await _videosService.GetVideoByIdAsync(videoVM.Id);
+                return View(videoVM);
+            }
+
+            var result = await _videosService.CreateEditVideoAsync(videoVM);
+
+            if (!result.IsSuccess)
+            {
+                TempData["error"] = result.Message;
+                videoVM = await _videosService.GetVideoByIdAsync(videoVM.Id);
+                return View(videoVM);
+            }
+
+            TempData["success"] = result.Message;
+            return RedirectToAction(nameof(Index));
+        }
+    }
+}
