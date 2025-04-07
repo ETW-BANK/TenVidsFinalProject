@@ -9,6 +9,7 @@ using TenVids.Utilities;
 using TenVids.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using TenVids.Utilities.FileHelpers;
 
 
 namespace TenVids.Services
@@ -20,12 +21,13 @@ namespace TenVids.Services
         private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly FileUploadConfig _fileUploadConfig;
+        private readonly IPicService _picService;   
 
-        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor, IMapper mapper,IConfiguration configuration, IOptions<FileUploadConfig> fileUploadConfig)
+        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor, IMapper mapper,IConfiguration configuration, IOptions<FileUploadConfig> fileUploadConfig,IPicService picService)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
-          
+            _picService = picService;
             _mapper = mapper;
             _configuration = configuration;
             _fileUploadConfig = fileUploadConfig.Value;   
@@ -33,6 +35,12 @@ namespace TenVids.Services
 
         public async Task<ErrorModel<Videos>> CreateEditVideoAsync(VideoVM model)
         {
+            // Null check for HttpContext
+            if (_httpContextAccessor?.HttpContext == null)
+            {
+                return ErrorModel<Videos>.Failure("HttpContext not available", 500);
+            }
+
             // Get user channel
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
             var userChannel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == userId);
@@ -53,7 +61,6 @@ namespace TenVids.Services
                     return ErrorModel<Videos>.Failure("Video with this title already exists", 409);
                 }
             }
-
 
             if (model.ImageUpload == null)
                 return ErrorModel<Videos>.Failure("Image thumbnail is required", 400);
@@ -87,47 +94,38 @@ namespace TenVids.Services
                     $"Video exceeds maximum size of {_fileUploadConfig.VideoMaxSizeInMB}MB",
                     400);
 
-            // Process files
-            var (thumbnailBytes, videoBytes) = await ProcessUploadedFiles(model);
+            // Process uploaded files
+            var thumbnailBytes = await ProcessUploadedFiles(model.ImageUpload);
+            var videoBytes = await ProcessUploadedFiles(model.VideoUpload);
 
-            // Create or update video
+            
             if (model.Id == 0)
             {
-                return await CreateNewVideo(model, userChannel.Id, thumbnailBytes, videoBytes);
+                return await CreateNewVideos(model, userChannel.Id, thumbnailBytes, videoBytes);
             }
             else
             {
                 return await UpdateExistingVideo(model, thumbnailBytes, videoBytes);
             }
         }
-        public async Task<VideoVM> GetVideoByIdAsync(int? id)
+
+        private async Task<ErrorModel<Videos>> CreateNewVideos(
+            VideoVM model, int channelId, byte[] thumbnailBytes, byte[] videoBytes)
         {
-            if (!await UserHasChannelAsync())
+            var newVideo = new Videos
             {
-                return null;
-            }
-
-            var imageTypes = AcceptableContentTypes("image") ?? Array.Empty<string>();
-            var videoTypes = AcceptableContentTypes("video") ?? Array.Empty<string>();
-
-            var videoVM = new VideoVM
-            {
-                CategoryList = await GetCategoryListAsync(),
-                ImageContentTypes = imageTypes.Any() ? string.Join(",", imageTypes) : string.Empty,
-                VideoContentTypes = videoTypes.Any() ? string.Join(",", videoTypes) : string.Empty,
+                Title = model.Title,
+                Description = model.Description,
+                CategoryId = model.CategoryId,
+                ChannelId = channelId,
+                Thumbnail = _picService.UploadPics(model.ImageUpload),
+                ContentType = model.VideoUpload.ContentType,
+                Contents = ProcessUploadedFiles(model.VideoUpload).GetAwaiter().GetResult(),
             };
 
-            if (id.HasValue && id.Value > 0)
-            {
-                var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == id.Value);
-                if (video != null)
-                {
-                    videoVM = _mapper.Map<VideoVM>(video);
-                  
-                }
-            }
-
-            return videoVM;
+           _unitOfWork.VideosRepository.Add(newVideo);
+            await _unitOfWork.CompleteAsync();
+            return ErrorModel<Videos>.Success(newVideo, "Video created successfully");
         }
 
         public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
@@ -153,6 +151,43 @@ namespace TenVids.Services
         {
             throw new NotImplementedException();
         }
+        public async Task<VideoVM> GetVideoByIdAsync(int? id)
+        {
+            if (!await UserHasChannelAsync())
+            {
+                return null;
+            }
+
+            var imageTypes = AcceptableContentTypes("image") ?? Array.Empty<string>();
+            var videoTypes = AcceptableContentTypes("video") ?? Array.Empty<string>();
+
+            var videoVM = new VideoVM
+            {
+                CategoryList = await GetCategoryListAsync(),
+                ImageContentTypes = imageTypes.Any() ? string.Join(",", imageTypes) : string.Empty,
+                VideoContentTypes = videoTypes.Any() ? string.Join(",", videoTypes) : string.Empty,
+            };
+
+            if (id.HasValue && id.Value > 0)
+            {
+                var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
+                    x => x.Id == id.Value,
+                    includeProperties: "Category,Channel");
+
+                if (video != null)
+                {
+                    
+                    videoVM.Id = video.Id;
+                    videoVM.Title = video.Title;
+                    videoVM.Description = video.Description;
+                    videoVM.CategoryId = video.CategoryId;
+                    videoVM.ImageUrl = video.Thumbnail;
+                  
+                }
+            }
+
+            return videoVM;
+        }
 
         public async Task<bool> UserHasChannelAsync()
         {
@@ -166,23 +201,14 @@ namespace TenVids.Services
         }
 
         #region Private Method
-        private async Task<(byte[] thumbnailBytes, byte[] videoBytes)> ProcessUploadedFiles(VideoVM model)
+        private async Task<byte[]> ProcessUploadedFiles(IFormFile file)
         {
-            byte[] thumbnailBytes;
-            using (var memoryStream = new MemoryStream())
-            {
-                await model.ImageUpload.CopyToAsync(memoryStream);
-                thumbnailBytes = memoryStream.ToArray();
-            }
+            byte[] contents;
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            contents = memoryStream.ToArray();
+            return contents;
 
-            byte[] videoBytes;
-            using (var memoryStream = new MemoryStream())
-            {
-                await model.VideoUpload.CopyToAsync(memoryStream);
-                videoBytes = memoryStream.ToArray();
-            }
-
-            return (thumbnailBytes, videoBytes);
         }
         private async Task<IEnumerable<SelectListItem>> GetCategoryListAsync()
         {
@@ -220,25 +246,7 @@ namespace TenVids.Services
 
             return false;
         }
-        private async Task<ErrorModel<Videos>> CreateNewVideo(
-          VideoVM model, int channelId, byte[] thumbnailBytes, byte[] videoBytes)
-        {
-            var newVideo = new Videos
-            {
-                Title = model.Title,
-                Description = model.Description,
-                CategoryId = model.CategoryId,
-                ChannelId = channelId,
-                Thumbnail = Convert.ToBase64String(thumbnailBytes),
-                ContentType = model.VideoUpload.ContentType,
-                Contents = videoBytes,
-              
-            };
-
-            _unitOfWork.VideosRepository.Add(newVideo);
-            await _unitOfWork.CompleteAsync();
-            return ErrorModel<Videos>.Success(newVideo, "Video created successfully");
-        }
+      
 
         private async Task<ErrorModel<Videos>> UpdateExistingVideo(
             VideoVM model, byte[] thumbnailBytes, byte[] videoBytes)
@@ -246,19 +254,32 @@ namespace TenVids.Services
             var existingVideo = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
             if (existingVideo == null)
                 return ErrorModel<Videos>.Failure("Video not found", 404);
-
+            existingVideo.Id=model.Id;
             existingVideo.Title = model.Title;
             existingVideo.Description = model.Description;
             existingVideo.CategoryId = model.CategoryId;
-            existingVideo.Thumbnail = Convert.ToBase64String(thumbnailBytes);
-            existingVideo.ContentType = model.VideoUpload.ContentType;
-            existingVideo.Contents = videoBytes;
-          
+
+            if (model.ImageUpload != null)
+            {
+                existingVideo.Thumbnail = _picService.UploadPics(model.ImageUpload);
+            }
+            else
+            {
+                existingVideo.Thumbnail = model.ImageUrl;
+            }
+            if (model.VideoUpload != null)
+            {
+                existingVideo.ContentType = model.VideoUpload.ContentType;
+                existingVideo.Contents = videoBytes;
+            }
+           
 
             _unitOfWork.VideosRepository.UpdateAsync(existingVideo);
             await _unitOfWork.CompleteAsync();
             return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
         }
+
+      
 
 
         #endregion
