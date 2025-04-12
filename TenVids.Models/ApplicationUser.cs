@@ -22,5 +22,7 @@ namespace TenVids.Models
         public ICollection<Subscribe> Subscribtions { get; set; }
         public ICollection<Likes>? Likes { get; set; }   
 
+        public ICollection<VideoViews>? VideoViews { get; set; }    
+
     }
 }

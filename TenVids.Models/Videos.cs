@@ -17,6 +17,8 @@ namespace TenVids.Models
         public string Description { get; set; }
         [Required]
         public string ContentType { get; set; }
+
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         [Required]
         public byte[] Contents { get; set; }
         public int CategoryId { get; set; }
@@ -30,6 +32,8 @@ namespace TenVids.Models
         public ICollection<Comment>? Comments { get; set; } 
 
         public ICollection<Likes>? Likes { get; set; }    
+
+        public ICollection<VideoViews>? VideoViewers { get; set; }
 
 
 

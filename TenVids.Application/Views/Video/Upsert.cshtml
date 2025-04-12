@@ -60,7 +60,7 @@
         $(function () {
             if ($('#videoId').val() > 0) {
                 // diplay preview image
-                $('#videoUpload').prop("disabled", true);
+                $('#videoUpload').prop("disabled", false);
                 const url = $('#imageUrl').val();
                 $('#previewImage').append(`<img src="${url}" class="card-img-top rounded preview-image" />`)
             }

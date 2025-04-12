@@ -68,6 +68,22 @@ namespace TenVids.Data.Access.Data
                 .WithMany(v => v.Likes)
                 .HasForeignKey(c => c.VideoId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<VideoViews>()
+                .HasKey(v => new { v.AppUserId, v.VideoId });
+            modelBuilder.Entity<VideoViews>()
+                .HasOne(v => v.AppUser)
+                .WithMany(u => u.VideoViews)
+                .HasForeignKey(v => v.AppUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<VideoViews>()
+                .HasOne(v => v.Video)
+                .WithMany(v => v.VideoViewers)
+                .HasForeignKey(v => v.VideoId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+
         }
 
 

@@ -88,7 +88,7 @@ namespace TenVids.Services
             }
 
             existingChannel.Name = model.Name.Trim();
-            existingChannel.Description = model.Description?.Trim();
+            existingChannel.Description = model.Description.Trim();
 
             try
             {

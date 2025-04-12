@@ -96,9 +96,9 @@ namespace TenVids.Services
 
             // Process uploaded files
             var thumbnailBytes = await ProcessUploadedFiles(model.ImageUpload);
-            var videoBytes = await ProcessUploadedFiles(model.VideoUpload);
+            var videoBytes = await ProcessUploadedFiles(model?.VideoUpload);
 
-            
+
             if (model.Id == 0)
             {
                 return await CreateNewVideos(model, userChannel.Id, thumbnailBytes, videoBytes);
@@ -272,7 +272,7 @@ namespace TenVids.Services
                 existingVideo.ContentType = model.VideoUpload.ContentType;
                 existingVideo.Contents = videoBytes;
             }
-           
+
 
             _unitOfWork.VideosRepository.UpdateAsync(existingVideo);
             await _unitOfWork.CompleteAsync();
