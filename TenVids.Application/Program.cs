@@ -9,8 +9,6 @@ using TenVids.Data.Access.Data;
 using TenVids.Data.Access;
 using TenVids.Models;
 using TenVids.Service.Extensions;
-using TenVids.Seed;
-using TenVids.Utilities.FileHelpers;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -53,9 +51,8 @@ static async Task InitializeDatabaseAsync(WebApplication app)
         var context = services.GetRequiredService<TenVidsApplicationContext>();
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
-        var picService = services.GetRequiredService<IPicService>();
 
-        await DBInitializer.InitializeAsync(context, userManager, roleManager,picService);
+        await DBInitializer.InitializeAsync(context, userManager, roleManager);
     }
     catch (Exception ex)
     {
