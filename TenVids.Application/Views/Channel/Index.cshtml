@@ -63,8 +63,53 @@ else
     <!-- Tab Content -->
     <div class="tab-content">
         <div class="tab-pane fade" id="myvideos">
-            <div class="mt-3"/>
+            <div class="mt-3 d-flex justify-content-between"/>
                  <a class="btn btn-primary" asp-controller="Video" asp-action="Upsert">Create Video</a>
+                 <h4 class="text-danger-empasis">Subscribers:2,300</h4>
+            </div>
+            <div class="card-border-primary mt-3 table-responsive-md">
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Video</th>
+                            <th class="sortBy" data-value="title">
+                                <span>Title</span>
+                                <span id="titleSortBy"></span>
+                             </th>
+                        <th class="sortBy" data-value="date">
+                            <span>Date</span>
+                            <span id="dateSortBy"></span>
+                        </th>
+                        <th class="sortBy" data-value="views">
+                            <span>Views</span>
+                            <span id="viewsSortBy"></span>
+                        </th>
+                        <th class="sortBy" data-value="comments">
+                            <span>Comments</span>
+                            <span id="commentsSortBy"></span>
+                        </th>
+                        <th class="sortBy" data-value="likes">
+                            <span>Likes</span>
+                            <span id="likesSortBy"></span>
+                        </th>
+                        <th class="sortBy" data-value="dislikes">
+                            <span>Dislikes</span>
+                            <span id="dislikesSortBy"></span>
+                        </th>
+                        <th class="sortBy" data-value="category">
+                            <span>Category</span>
+                            <span id="categorySortBy"></span>
+                        </th>
+                        <th>Actions</th>
+                           
+                        </tr>
+                    </thead>
+                <tbody id="videosTableBody">
+
+                    </tbody>
+                </table>
+
             </div>
         </div>
 
