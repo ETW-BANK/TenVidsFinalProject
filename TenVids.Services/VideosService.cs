@@ -10,6 +10,10 @@ using TenVids.ViewModels;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using TenVids.Utilities.FileHelpers;
+using TenVids.Models.Pagination;
+using TenVids.Models.DTOs;
+using Microsoft.EntityFrameworkCore;
+using TenVids.Repository;
 
 
 namespace TenVids.Services
@@ -109,24 +113,53 @@ namespace TenVids.Services
             }
         }
 
-        private async Task<ErrorModel<Videos>> CreateNewVideos(
-            VideoVM model, int channelId, byte[] thumbnailBytes, byte[] videoBytes)
+
+        public async Task<PaginatedResult<VideoGridChannelDto>> GetVideosForChannelAsync(BaseParams parameters)
         {
-            var newVideo = new Videos
+            var userId = _httpContextAccessor.HttpContext.User.GetUserId();
+
+            // Single optimized query
+            var query = from channel in _unitOfWork.ChannelRepository.GetQueryable()
+                        where channel.AppUserId == userId
+                        join video in _unitOfWork.VideosRepository.GetQueryable()
+                            on channel.Id equals video.ChannelId
+                        select new VideoGridChannelDto
+                        {
+                            Id = video.Id,
+                            ThumbnailUrl = video.Thumbnail,
+                            Title = video.Title,
+                            CreatedAt = video.CreatedAt,
+                            CategoryName = video.Category.Name,
+                            Views = SD.GetRandomNumber(10000, 500000, video.Id),
+                            Comments = SD.GetRandomNumber(1, 100, video.Id),
+                            Likes = SD.GetRandomNumber(5, 100, video.Id),
+                            Dislikes = SD.GetRandomNumber(5, 100, video.Id)
+                        };
+
+            // Apply sorting
+            query = parameters.SortBy switch
             {
-                Title = model.Title,
-                Description = model.Description,
-                CategoryId = model.CategoryId,
-                ChannelId = channelId,
-                Thumbnail = _picService.UploadPics(model.ImageUpload),
-                ContentType = model.VideoUpload.ContentType,
-                Contents = ProcessUploadedFiles(model.VideoUpload).GetAwaiter().GetResult(),
+                "title-a" => query.OrderBy(x => x.Title),
+                "title-d" => query.OrderByDescending(x => x.Title),
+                _ => query.OrderByDescending(x => x.CreatedAt)
             };
 
-           _unitOfWork.VideosRepository.Add(newVideo);
-            await _unitOfWork.CompleteAsync();
-            return ErrorModel<Videos>.Success(newVideo, "Video created successfully");
+            // Single roundtrip for count + data
+            var totalCount = await query.CountAsync();
+            var items = await query
+                .Skip((parameters.PageNumber - 1) * parameters.PageSize)
+                .Take(parameters.PageSize)
+                .ToListAsync();
+
+            return new PaginatedResult<VideoGridChannelDto>(
+                items,
+                totalCount,
+                parameters.PageSize,
+                parameters.PageNumber,
+                (int)Math.Ceiling(totalCount / (double)parameters.PageSize));
         }
+
+
 
         public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
         {
@@ -147,9 +180,21 @@ namespace TenVids.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<VideoVM>> GetAllVideosAsync()
+        public async Task<IEnumerable<VideoVM>> GetAllVideosAsync()
         {
-            throw new NotImplementedException();
+            var result = await _unitOfWork.VideosRepository.GetAllAsync(
+                               includeProperties: "Category,Channel",
+                                              orderby: GetOrderByExpression("date-d"));
+
+            return result.Select(video => new VideoVM
+            {
+                Id = video.Id,
+                Title = video.Title,
+                Description = video.Description,
+                CategoryId = video.CategoryId,
+                ImageUrl = video.Thumbnail,
+
+            });
         }
         public async Task<VideoVM> GetVideoByIdAsync(int? id)
         {
@@ -201,6 +246,20 @@ namespace TenVids.Services
         }
 
         #region Private Method
+
+        private Func<IQueryable<Videos>, IOrderedQueryable<Videos>> GetOrderByExpression(string sortBy)
+        {
+            return sortBy switch
+            {
+                "title-a" => q => q.OrderBy(x => x.Title),
+                "title-d" => q => q.OrderByDescending(x => x.Title),
+                "date-a" => q => q.OrderBy(x => x.CreatedAt),
+                "date-d" => q => q.OrderByDescending(x => x.CreatedAt),
+                "Category-a" => q => q.OrderBy(x => x.Category.Name),
+                "Category-d" => q => q.OrderByDescending(x => x.Category.Name),
+                _ => q => q.OrderByDescending(x => x.CreatedAt)
+            };
+        }
         private async Task<byte[]> ProcessUploadedFiles(IFormFile file)
         {
             byte[] contents;
@@ -246,7 +305,24 @@ namespace TenVids.Services
 
             return false;
         }
-      
+        private async Task<ErrorModel<Videos>> CreateNewVideos(
+           VideoVM model, int channelId, byte[] thumbnailBytes, byte[] videoBytes)
+        {
+            var newVideo = new Videos
+            {
+                Title = model.Title,
+                Description = model.Description,
+                CategoryId = model.CategoryId,
+                ChannelId = channelId,
+                Thumbnail = _picService.UploadPics(model.ImageUpload),
+                ContentType = model.VideoUpload.ContentType,
+                Contents = ProcessUploadedFiles(model.VideoUpload).GetAwaiter().GetResult(),
+            };
+
+            _unitOfWork.VideosRepository.Add(newVideo);
+            await _unitOfWork.CompleteAsync();
+            return ErrorModel<Videos>.Success(newVideo, "Video created successfully");
+        }
 
         private async Task<ErrorModel<Videos>> UpdateExistingVideo(
             VideoVM model, byte[] thumbnailBytes, byte[] videoBytes)
@@ -279,7 +355,11 @@ namespace TenVids.Services
             return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
         }
 
-      
+       
+
+
+
+
 
 
         #endregion

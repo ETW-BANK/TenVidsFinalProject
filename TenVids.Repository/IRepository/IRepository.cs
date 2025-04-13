@@ -18,8 +18,13 @@ namespace TenVids.Repository.IRepository
         Task <IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null, string includeProperties = null,
             Func<IQueryable<T>,IOrderedQueryable<T>> orderby = null);
         Task<int> CountAsync(Expression<Func<T, bool>> filter = null);
+        IQueryable<T> GetQueryable(
+    Expression<Func<T, bool>> filter = null,
+    string includeProperties = null,
+    Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null);
 
 
-        
+
+
     }
 }

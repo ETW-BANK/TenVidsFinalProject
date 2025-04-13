@@ -65,6 +65,22 @@ namespace TenVids.Repository
         
             return await query.ToListAsync();
         }
+        public IQueryable<T> GetQueryable( Expression<Func<T, bool>> filter = null, string includeProperties = null,
+    Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null)
+        {
+            IQueryable<T> query = _dbSet;
+
+            if (filter != null)
+                query = query.Where(filter);
+
+            if (!string.IsNullOrEmpty(includeProperties))
+                query = GetWithProperties(query, includeProperties);
+
+            if (orderBy != null)
+                query = orderBy(query);
+
+            return query;
+        }
 
         public async Task<T> GetByIdAsync(int id, string includeProperties = null)
         {

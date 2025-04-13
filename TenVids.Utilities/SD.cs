@@ -20,5 +20,10 @@ namespace TenVids.Utilities
             int range = (maxDate - minDate).Days;
             return minDate.AddDays(random.Next(range + 1));
         }
+        public static int GetRandomNumber(int min, int max, int seed)
+        {
+            Random random = new Random(seed);
+            return random.Next(min, max);
+        }   
     }
 }

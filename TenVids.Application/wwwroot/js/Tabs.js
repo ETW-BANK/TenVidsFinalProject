@@ -1,4 +1,8 @@
 ﻿
+
+let pageNumber = 1;
+let pageSize = 5;
+let sortBy='';
 $(function () {
     // Initialize tab persistence
     $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -12,6 +16,7 @@ $(function () {
     } else {
         $('a[href="#myvideos"]').tab('show');
     }
+    getMyVideos();
 });
 
 // Profile Editing Functions
@@ -41,4 +46,21 @@ function cancelEdit() {
     // Toggle buttons
     $('#divEditButton').show();
     $('#updateProfileButtons').hide();
+}
+
+function getMyVideos() {
+    const parameters = {
+        pageNumber,
+        pageSize,
+        sortBy
+    }
+    $.ajax({
+        type: 'GET',
+        url: '/Video/GetVideosForChannelGrid',
+        data: parameters,
+        success: function (response) {
+            console.log(response);
+        }
+      
+    });
 }

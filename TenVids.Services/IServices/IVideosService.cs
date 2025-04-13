@@ -1,8 +1,10 @@
 ﻿
-using Microsoft.AspNetCore.Mvc.Rendering;
 using TenVids.Models;
+using TenVids.Models.DTOs;
+using TenVids.Models.Pagination;
 using TenVids.Utilities;
 using TenVids.ViewModels;
+
 
 namespace TenVids.Services.IServices
 {
@@ -16,6 +18,10 @@ namespace TenVids.Services.IServices
         Task DeleteVideoAsync(Videos video);
         Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId);
         Task<IEnumerable<VideoVM>> GetVideosByChannelIdAsync(int channelId);
-       
+
+        //Task<PaginatedList<VideoGridChannelDto>> GetVideosForChannelGrid(int channelId, BaseParams parameters);
+
+        Task<PaginatedResult<VideoGridChannelDto>> GetVideosForChannelAsync(BaseParams parameters);
+
     }
 }

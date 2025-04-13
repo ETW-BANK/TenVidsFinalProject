@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
+using TenVids.Models.Pagination;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.ViewModels;
@@ -65,6 +66,13 @@ namespace TenVids.Application.Controllers
 
             TempData["success"] = result.Message;
             return RedirectToAction("Index", "Channel");
+        }
+        [HttpGet]
+        public async Task<IActionResult>GetVideosForChannelGrid(BaseParams parameters)
+        {
+            var result=await _videosService.GetVideosForChannelAsync(parameters);
+
+            return Json(new ApiResponse(200, result: result));
         }
     }
 }
