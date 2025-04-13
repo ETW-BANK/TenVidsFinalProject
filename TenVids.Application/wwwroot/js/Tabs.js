@@ -259,19 +259,82 @@ $(document).on('click', '.pageSizeBtn', function () {
     getMyVideos();
 });
 
-$(document).on('click', '.sortBy', function () {
-    const sortValue = $(this).data('value');
 
-    // Toggle between ascending and descending
-    if (sortBy === `${sortValue}-a`) {
-        sortBy = `${sortValue}-d`;
+$(document).on('click', '.sortBy', function () {
+    const sortField = $(this).data('value');
+    const $sortIndicator = $(`#${sortField}SortBy`);
+
+   
+    $('.sortBy span i').remove();
+
+    if (sortBy.startsWith(sortField)) {
+        
+        sortBy = sortBy.endsWith('-a')
+            ? `${sortField}-d`
+            : `${sortField}-a`;
     } else {
-        sortBy = `${sortValue}-a`;
+        
+        sortBy = `${sortField}-a`;
     }
 
-    // Update sort indicators
-    $('.sortBy span').text('');
-    $(this).find('span').text(sortBy.endsWith('-a') ? '↑' : '↓');
+  
+    const iconClass = sortBy.endsWith('-a')
+        ? 'bi-arrow-up-short'
+        : 'bi-arrow-down-short';
+    $sortIndicator.append(`<i class="bi ${iconClass}"></i>`);
 
+    removeAllOtherArrows(sortField);
     getMyVideos();
 });
+function removeAllOtherArrows(exception) {
+    if (exception == 'title') {
+        $('#dateSortBy').empty();
+        $('#viewsSortBy').empty();
+        $('#commentsSortBy').empty();
+        $('#likesSortBy').empty();
+        $('#dislikesSortBy').empty();
+        $('#categorySortBy').empty();
+    } else if (exception == 'date') {
+        $('#titleSortBy').empty();
+        $('#viewsSortBy').empty();
+        $('#commentsSortBy').empty();
+        $('#likesSortBy').empty();
+        $('#dislikesSortBy').empty();
+        $('#categorySortBy').empty();
+    } else if (exception == 'views') {
+        $('#titleSortBy').empty();
+        $('#dateSortBy').empty();
+        $('#commentsSortBy').empty();
+        $('#likesSortBy').empty();
+        $('#dislikesSortBy').empty();
+        $('#categorySortBy').empty();
+    } else if (exception == 'comments') {
+        $('#titleSortBy').empty();
+        $('#dateSortBy').empty();
+        $('#viewsSortBy').empty();
+        $('#likesSortBy').empty();
+        $('#dislikesSortBy').empty();
+        $('#categorySortBy').empty();
+    } else if (exception == 'likes') {
+        $('#titleSortBy').empty();
+        $('#dateSortBy').empty();
+        $('#viewsSortBy').empty();
+        $('#commentsSortBy').empty();
+        $('#dislikesSortBy').empty();
+        $('#categorySortBy').empty();
+    } else if (exception == 'dislikes') {
+        $('#titleSortBy').empty();
+        $('#dateSortBy').empty();
+        $('#viewsSortBy').empty();
+        $('#commentsSortBy').empty();
+        $('#likesSortBy').empty();
+        $('#categorySortBy').empty();
+    } else if (exception == 'category') {
+        $('#titleSortBy').empty();
+        $('#dateSortBy').empty();
+        $('#viewsSortBy').empty();
+        $('#commentsSortBy').empty();
+        $('#likesSortBy').empty();
+        $('#dislikesSortBy').empty();
+    }
+}

@@ -112,7 +112,6 @@ namespace TenVids.Services
             }
         }
 
-
         public async Task<PaginatedResult<VideoGridChannelDto>> GetVideosForChannelAsync(BaseParams parameters)
         {
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
@@ -186,7 +185,6 @@ namespace TenVids.Services
                 return ErrorModel<Videos>.Failure("An error occurred while deleting the video", 500);
             }
         }
-
         public async Task<IEnumerable<VideoVM>> GetAllVideosAsync()
         {
             var result = await _unitOfWork.VideosRepository.GetAllAsync(
