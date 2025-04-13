@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TenVids.Models;
 using TenVids.Repository.IRepository;
@@ -13,7 +12,7 @@ using TenVids.Utilities.FileHelpers;
 using TenVids.Models.Pagination;
 using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
-using TenVids.Repository;
+using Microsoft.Extensions.Logging;
 
 
 namespace TenVids.Services
@@ -22,19 +21,19 @@ namespace TenVids.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor? _httpContextAccessor;
-        private readonly IMapper _mapper;
         private readonly IConfiguration _configuration;
         private readonly FileUploadConfig _fileUploadConfig;
-        private readonly IPicService _picService;   
+        private readonly IPicService _picService;
+      
 
-        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor, IMapper mapper,IConfiguration configuration, IOptions<FileUploadConfig> fileUploadConfig,IPicService picService)
+        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IOptions<FileUploadConfig> fileUploadConfig,IPicService picService,ILogger<VideosService> logger)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _picService = picService;
-            _mapper = mapper;
             _configuration = configuration;
-            _fileUploadConfig = fileUploadConfig.Value;   
+            _fileUploadConfig = fileUploadConfig.Value;
+            
         }
 
         public async Task<ErrorModel<Videos>> CreateEditVideoAsync(VideoVM model)
@@ -159,25 +158,33 @@ namespace TenVids.Services
                 (int)Math.Ceiling(totalCount / (double)parameters.PageSize));
         }
 
-
-
-        public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
+        public async Task<ErrorModel<Videos>> DeleteVideoAsync(int id)
         {
-            throw new NotImplementedException();
-        }
+   
+            try
+            {
+                var userId = _httpContextAccessor.HttpContext.User.GetUserId();
 
-        public Task<IEnumerable<VideoVM>> GetVideosByChannelIdAsync(int channelId)
-        {
-            throw new NotImplementedException();
-        }
+                var existingVideo = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
+                    x => x.Id == id && x.Channel.AppUserId == userId,
+                    includeProperties: "Channel");
 
-        public Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
-        {
-            throw new NotImplementedException();
-        }
-        public Task DeleteVideoAsync(Videos video)
-        {
-            throw new NotImplementedException();
+                if (existingVideo == null)
+                {
+
+                    return ErrorModel<Videos>.Failure("Video not found or you don't have permission", 404);
+                }
+
+                _unitOfWork.VideosRepository.Remove(existingVideo);
+                await _unitOfWork.CompleteAsync();
+
+                return ErrorModel<Videos>.Success(existingVideo, $"Video '{existingVideo.Title}' deleted successfully");
+            }
+            catch (Exception ex)
+            {
+             
+                return ErrorModel<Videos>.Failure("An error occurred while deleting the video", 500);
+            }
         }
 
         public async Task<IEnumerable<VideoVM>> GetAllVideosAsync()
@@ -243,6 +250,21 @@ namespace TenVids.Services
                 return true;
             }
             return false;
+        }
+
+        public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IEnumerable<VideoVM>> GetVideosByChannelIdAsync(int channelId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
+        {
+            throw new NotImplementedException();
         }
 
         #region Private Method

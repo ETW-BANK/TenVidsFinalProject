@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using System.Threading.Tasks;
 using System;
 using TenVids.Data.Access.Data;
-using TenVids.Data.Access;
 using TenVids.Models;
 using TenVids.Service.Extensions;
 using TenVids.Utilities.FileHelpers;

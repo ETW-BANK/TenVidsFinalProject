@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using TenVids.Application.Controllers.Requests;
 using System;
 using System.Threading.Tasks;
 using TenVids.Models.Pagination;
@@ -14,10 +16,12 @@ namespace TenVids.Application.Controllers
     {
 
         private readonly IVideosService _videosService;
-
+        
         public VideoController(IVideosService videosService)
         {
             _videosService = videosService;
+          
+
         }
         [HttpGet]
         public async Task<IActionResult> Upsert(int id)
@@ -67,6 +71,9 @@ namespace TenVids.Application.Controllers
             TempData["success"] = result.Message;
             return RedirectToAction("Index", "Channel");
         }
+
+
+        #region API Calls
         [HttpGet]
         public async Task<IActionResult>GetVideosForChannelGrid(BaseParams parameters)
         {
@@ -74,5 +81,29 @@ namespace TenVids.Application.Controllers
 
             return Json(new ApiResponse(200, result: result));
         }
+
+        [HttpDelete]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteVideo([FromBody] RequestParams request)
+        {
+            try
+            {
+        
+                if (request?.Id <= 0)
+                {
+                    return Json(new ApiResponse(400, "Invalid video ID"));
+                }
+
+                var result = await _videosService.DeleteVideoAsync(request.Id);
+                return Json(new ApiResponse(result.IsSuccess ? 200 : result.StatusCode, result.Message));
+            }
+            catch (Exception ex)
+            {
+              
+                return Json(new ApiResponse(500, "An error occurred while deleting the video"));
+            }
+        }
+
+         #endregion
     }
 }
