@@ -1,5 +1,5 @@
 ﻿@using TenVids.Utilities
-@model HomeVM  
+@model HomeVM
 @{
     ViewData["Title"] = "Home Page";
 }
@@ -17,12 +17,16 @@ else
         <nav class="p-2 text-bg-dark rounded d-none d-lg-block" style="width: 250px; min-height: 700px;">
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
-                    <a asp-action="Index" asp-route-page="Home" class="nav-link text-white @Html.IsActivePage("Home")">
+                    <a asp-action="Index" asp-route-page="Home"
+                       class="nav-link text-white @Html.IsActivePage("Home")"
+                       data-page="home">
                         <i class="bi bi-house-door me-2"></i><span class="nav-text">Home</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a asp-action="Index" asp-route-page="Subscriptions" class="nav-link text-white @Html.IsActivePage("Subscriptions")">
+                    <a asp-action="Index" asp-route-page="Subscriptions"
+                       class="nav-link text-white @Html.IsActivePage("Subscriptions")"
+                       data-page="subscriptions">
                         <i class="bi bi-youtube me-2"></i><span class="nav-text">Subscriptions</span>
                     </a>
                 </li>
@@ -30,17 +34,23 @@ else
                     <hr />
                 </li>
                 <li class="nav-item">
-                    <a asp-action="Index" asp-route-page="History" class="nav-link text-white @Html.IsActivePage("History")">
+                    <a asp-action="Index" asp-route-page="History"
+                       class="nav-link text-white @Html.IsActivePage("History")"
+                       data-page="history">
                         <i class="bi bi-clock-history me-2"></i><span class="nav-text">History</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a asp-action="Index" asp-route-page="Likes" class="nav-link text-white @Html.IsActivePage("Likes")">
+                    <a asp-action="Index" asp-route-page="Likes"
+                       class="nav-link text-white @Html.IsActivePage("Likes")"
+                       data-page="likes">
                         <i class="bi bi-hand-thumbs-up me-2"></i><span class="nav-text">Likes</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a asp-action="Index" asp-route-page="Dislikes" class="nav-link text-white @Html.IsActivePage("Dislikes")">
+                    <a asp-action="Index" asp-route-page="Dislikes"
+                       class="nav-link text-white @Html.IsActivePage("Dislikes")"
+                       data-page="dislikes">
                         <i class="bi bi-hand-thumbs-down me-2"></i><span class="nav-text">Dislikes</span>
                     </a>
                 </li>
@@ -49,36 +59,37 @@ else
         <!-- Navbar for smaller screens -->
         <nav class="d-lg-none mb-2">
             <div class="p-2 text-bg-dark rounded d-flex justify-content-between" style="width: 100%;">
-                <a asp-action="Index" asp-route-page="Home" class="btn btn-dark @Html.IsActivePage("Home")">
+                <a asp-action="Index" asp-route-page="Home" class="btn btn-dark @Html.IsActivePage("Home")" data-page="home">
                     <i class="bi bi-house-door me-2"></i>
                 </a>
-                <a asp-action="Index" asp-route-page="Subscriptions" class="btn btn-dark @Html.IsActivePage("Subscriptions")">
+                <a asp-action="Index" asp-route-page="Subscriptions" class="btn btn-dark @Html.IsActivePage("Subscriptions")" data-page="subscriptions">
                     <i class="bi bi-youtube me-2"></i>
                 </a>
-                <a asp-action="Index" asp-route-page="History" class="btn btn-dark @Html.IsActivePage("History")">
+                <a asp-action="Index" asp-route-page="History" class="btn btn-dark @Html.IsActivePage("History")" data-page="history">
                     <i class="bi bi-clock-history me-2"></i>
                 </a>
-                <a asp-action="Index" asp-route-page="Likes" class="btn btn-dark @Html.IsActivePage("Likes")">
+                <a asp-action="Index" asp-route-page="Likes" class="btn btn-dark @Html.IsActivePage("Likes")" data-page="likes">
                     <i class="bi bi-hand-thumbs-up me-2"></i>
                 </a>
-                <a asp-action="Index" asp-route-page="Dislikes" class="btn btn-dark @Html.IsActivePage("Dislikes")">
+                <a asp-action="Index" asp-route-page="Dislikes" class="btn btn-dark @Html.IsActivePage("Dislikes")" data-page="dislikes">
                     <i class="bi bi-hand-thumbs-down me-2"></i>
                 </a>
             </div>
         </nav>
         <div class="px-2 rounded" style="background-color:transparent; width:100%">
-            @if (Model.page == null || Model.page == "Home")
+            @if (Model.Page == null || string.Equals(Model.Page, "Home", StringComparison.OrdinalIgnoreCase))
             {
-               <h3 class="text-warning-emphasis">@Model.page</h3>
-                <partial name="_HomePartial" model="Model"/>
+                <h3 class="text-warning-emphasis">@Model.Page</h3>
+                <partial name="_HomePartial" model="Model" />
             }
             else
             {
-                
+                <p>Others</p>
             }
         </div>
     </div>
 }
 
-
-
+@section Scripts {
+    <script src="~/js/home_home.js"></script>
+}

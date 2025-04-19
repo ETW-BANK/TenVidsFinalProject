@@ -1,4 +1,6 @@
 ﻿
+using Microsoft.EntityFrameworkCore;
+
 namespace TenVids.Models.Pagination
 {
    public class PaginatedList<T> : List<T>
@@ -20,19 +22,19 @@ namespace TenVids.Models.Pagination
 
         }
 
-    //public static async Task< PaginatedList<T>> CreateAsync(IQueryable<T> query,int pageNumber, int pageSize)
-    //    {
-    //      var totalitemcount= await query.CountAsync();
-    //        var totalpages = (int)Math.Ceiling(totalitemcount / (double)pageSize);
-    //        if (pageNumber > totalpages && totalpages>0)
-    //        {
-    //            pageNumber = totalpages;
-    //        }
+        public static async Task<PaginatedList<T>> CreateAsync(IQueryable<T> query, int pageNumber, int pageSize)
+        {
+            var totalitemcount = await query.CountAsync();
+            var totalpages = (int)Math.Ceiling(totalitemcount / (double)pageSize);
+            if (pageNumber > totalpages && totalpages > 0)
+            {
+                pageNumber = totalpages;
+            }
 
-    //        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+            var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
-    //        return new PaginatedList<T>(items, totalpages, totalitemcount, pageNumber, pageSize);
+            return new PaginatedList<T>(items, totalpages, totalitemcount, pageNumber, pageSize);
 
-    //    }
+        }
     }
 }

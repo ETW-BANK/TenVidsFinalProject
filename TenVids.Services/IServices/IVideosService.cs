@@ -19,7 +19,7 @@ namespace TenVids.Services.IServices
         Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId);
         Task<IEnumerable<VideoVM>> GetVideosByChannelIdAsync(int channelId);
 
-        //Task<PaginatedList<VideoGridChannelDto>> GetVideosForChannelGrid(int channelId, BaseParams parameters);
+        Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters);
 
         Task<PaginatedResult<VideoGridChannelDto>> GetVideosForChannelAsync(BaseParams parameters);
 

@@ -34,7 +34,7 @@ namespace TenVids.Services
                 throw new UnauthorizedAccessException("User not authenticated");
             }
 
-            home.page = page ?? "Home";
+            home.Page= page ?? "Home";
 
             if (string.IsNullOrEmpty(page) || page.Equals("Home", StringComparison.OrdinalIgnoreCase))
             {

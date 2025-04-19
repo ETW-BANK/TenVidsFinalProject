@@ -14,6 +14,7 @@ using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
+
 namespace TenVids.Services
 {
     public class VideosService: IVideosService
@@ -24,7 +25,6 @@ namespace TenVids.Services
         private readonly FileUploadConfig _fileUploadConfig;
         private readonly IPicService _picService;
       
-
         public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IOptions<FileUploadConfig> fileUploadConfig,IPicService picService,ILogger<VideosService> logger)
         {
             _unitOfWork = unitOfWork;
@@ -34,7 +34,23 @@ namespace TenVids.Services
             _fileUploadConfig = fileUploadConfig.Value;
             
         }
+        public async Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters)
+        {
+            var userid = _httpContextAccessor?.HttpContext?.User.GetUserId();   
+            if(userid==null)
+            {
+                throw new UnauthorizedAccessException("User not authenticated");
+            }
+            var paginatedList = await GetVideos(parameters);
 
+            return new PaginatedResult<VideoForHomeDto>(
+                items: paginatedList.ToList(),  // Convert to IReadOnlyList
+                totalCount: paginatedList.TotalCount,
+                pageSize: parameters.PageSize,
+                pageNumber: parameters.PageNumber,
+                totalPages: (int)Math.Ceiling(paginatedList.TotalCount / (double)parameters.PageSize)
+            );
+        }
         public async Task<ErrorModel<Videos>> CreateEditVideoAsync(VideoVM model)
         {
             // Null check for HttpContext
@@ -115,7 +131,6 @@ namespace TenVids.Services
         {
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
 
-            // Single optimized query
             var query = from channel in _unitOfWork.ChannelRepository.GetQueryable()
                         where channel.AppUserId == userId
                         join video in _unitOfWork.VideosRepository.GetQueryable()
@@ -133,7 +148,7 @@ namespace TenVids.Services
                             Dislikes = SD.GetRandomNumber(5, 100, video.Id)
                         };
 
-            // Apply sorting
+           
             query = parameters.SortBy switch
             {
                 "title-a" => query.OrderBy(x => x.Title),
@@ -141,7 +156,7 @@ namespace TenVids.Services
                 _ => query.OrderByDescending(x => x.CreatedAt)
             };
 
-            // Single roundtrip for count + data
+            // Single roundtrip for count 
             var totalCount = await query.CountAsync();
             var items = await query
                 .Skip((parameters.PageNumber - 1) * parameters.PageSize)
@@ -154,8 +169,8 @@ namespace TenVids.Services
                 parameters.PageSize,
                 parameters.PageNumber,
                 (int)Math.Ceiling(totalCount / (double)parameters.PageSize));
-        }
 
+        }
         public async Task<ErrorModel<Videos>> DeleteVideoAsync(int id)
         {
    
@@ -248,6 +263,7 @@ namespace TenVids.Services
             }
             return false;
         }
+    
 
         public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
         {
@@ -265,6 +281,72 @@ namespace TenVids.Services
         }
 
         #region Private Method
+        private async Task<PaginatedList<VideoForHomeDto>> GetVideos(HomeParameters parameters)
+        {
+             
+
+            if (parameters == null)
+            {
+                throw new ArgumentNullException(nameof(parameters));
+            }
+
+            parameters.PageNumber = Math.Max(1, parameters.PageNumber);
+            parameters.PageSize = Math.Clamp(parameters.PageSize, 1, 100); 
+
+            try
+            {
+               
+                var query = _unitOfWork.VideosRepository.GetQueryable()
+                 .Include(v => v.Category)  
+                .Include(v => v.Channel)   
+                 .AsQueryable();
+               
+                if (parameters.CategoryId > 0)
+                {
+                    query = query.Where(x => x.CategoryId == parameters.CategoryId);
+                }
+
+                if (!string.IsNullOrWhiteSpace(parameters.SearchBy))
+                {
+                    var searchTerm = parameters.SearchBy.Trim().ToLower();
+                    query = query.Where(x =>
+                        x.Title.ToLower().Contains(searchTerm) ||
+                        (x.Description != null && x.Description.ToLower().Contains(searchTerm))
+                    );
+                }
+
+                query = parameters.SortBy?.ToLower() switch
+                {
+                    
+                    "newest" => query.OrderByDescending(x => x.CreatedAt),
+                    "oldest" => query.OrderBy(x => x.CreatedAt),
+                    _ => query.OrderByDescending(x => x.CreatedAt) 
+                };
+
+                var resultQuery = query.Select(x => new VideoForHomeDto
+                {
+                    Id = x.Id,
+                    Title = x.Title,
+                    Description = x.Description,
+                    ThumbnailUrl = x.Thumbnail,
+                    CreatedAt = x.CreatedAt,
+                    Views = SD.GetRandomNumber(10000, 500000, x.Id),
+                    ChannelName = x.Channel.Name,
+                    ChannelId = x.ChannelId,
+                    CategoryId = x.CategoryId,
+              
+                });
+
+                return await PaginatedList<VideoForHomeDto>.CreateAsync(
+                    resultQuery.AsNoTracking(),
+                    parameters.PageNumber,
+                    parameters.PageSize);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("Error retrieving videos", ex);
+            }
+        }
 
         private Func<IQueryable<Videos>, IOrderedQueryable<Videos>> GetOrderByExpression(string sortBy)
         {
@@ -372,6 +454,7 @@ namespace TenVids.Services
             await _unitOfWork.CompleteAsync();
             return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
         }
+
 
         #endregion
     }
