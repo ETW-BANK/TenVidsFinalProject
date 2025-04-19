@@ -98,7 +98,7 @@ function buildPaginationButtons(result) {
                <i class="bi bi-chevron-left"></i>
                </button>`;
 
-    
+    // Page number buttons
     const startPage = Math.max(1, currentPage - 2);
     const endPage = Math.min(totalPages, currentPage + 2);
 
@@ -108,7 +108,7 @@ function buildPaginationButtons(result) {
                    data-value="${i}">${i}</button>`;
     }
 
-  
+    // Next Page button
     buttons += `<button type="button" class="btn btn-secondary btn-sm paginationBtn" 
                ${currentPage >= totalPages ? 'disabled' : ''} 
                data-value="${currentPage + 1}" 
@@ -116,6 +116,7 @@ function buildPaginationButtons(result) {
                <i class="bi bi-chevron-right"></i>
                </button>`;
 
+    // Last Page button
     buttons += `<button type="button" class="btn btn-secondary btn-sm paginationBtn" 
                ${currentPage >= totalPages ? 'disabled' : ''} 
                data-value="${totalPages}" 
@@ -125,12 +126,24 @@ function buildPaginationButtons(result) {
 
     $('#paginationBtnGroup').html(buttons);
 
-   
+    // Initialize items per page dropdown
+    initItemsPerPageDropdown();
+
+    // Single click handler for pagination buttons
     $('.paginationBtn').off('click').on('click', function () {
         pageNumber = parseInt($(this).data('value'));
         loadVideos(); 
     });
 }
+
+$('.pageSizeBtn').on('click', function () {
+    const newPageSize = parseInt($(this).data('value'));
+    if (pageSize !== newPageSize) {
+        pageSize = newPageSize;
+        pageNumber = 1;
+        loadVideos();
+    }
+});
 
 function DisplayVideos(videos) {
     let divTag = '';

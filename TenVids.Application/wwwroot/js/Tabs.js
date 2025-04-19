@@ -147,12 +147,21 @@ function buildPaginationButtons(result) {
                </button>`;
 
     $('#paginationBtnGroup').html(buttons);
+    // Show items per page dropdown
+    $('.paginationBtn').click( function () {
+        pageNumber = $(this).data('value');
+        getMyVideos();
+    });
 
-    // Rebind click events
+
+
+    // click events
     $('.paginationBtn').off('click').on('click', function () {
         pageNumber = parseInt($(this).data('value'));
         getMyVideos();
     });
+  
+    
 }
 
 function populateVideoTableBody(videos) {
