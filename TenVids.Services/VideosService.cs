@@ -14,7 +14,6 @@ using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
-
 namespace TenVids.Services
 {
     public class VideosService: IVideosService
@@ -369,18 +368,10 @@ namespace TenVids.Services
                 existingVideo.Contents = videoBytes;
             }
 
-
             _unitOfWork.VideosRepository.UpdateAsync(existingVideo);
             await _unitOfWork.CompleteAsync();
             return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
         }
-
-       
-
-
-
-
-
 
         #endregion
     }
