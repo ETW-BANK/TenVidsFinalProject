@@ -72,6 +72,15 @@ namespace TenVids.Application.Controllers
             return RedirectToAction("Index", "Channel");
         }
 
+     
+
+        public IActionResult WatchVideos(int id)
+        {
+
+
+            return View();
+        }
+
 
         #region API Calls
         [HttpGet]

@@ -175,8 +175,8 @@ function DisplayVideos(videos) {
 
             divTag += `<div class="col-xl-3 col-md-6 pt-2">
                 <div class="p-2 border rounded text-center">
-                    <div><a href="/Video/Watch/${v.id}"><img src="${v.thumbnailUrl}" class="rounded preview-image" /></a></div>
-                    <a href="/Video/Watch/${v.id}" class="text-danger-emphasis" style="text-decoration: none;">${v.title}</a>
+                    <div><a href="/Video/WatchVideos/${v.id}"><img src="${v.thumbnailUrl}" class="rounded preview-image" /></a></div>
+                    <a href="/Video/WatchVideos/${v.id}" class="text-danger-emphasis" style="text-decoration: none;">${v.title}</a>
                     <div><span style="font-size: small">
                         <a href="/Member/Channel/${v.channelId}" style="text-decoration: none;" class="text-primary">${v.channelName}</a> <br />
                         ${formatView(v.views)} - ${timeAgo(v.createdAt)}</span>
