@@ -8,25 +8,23 @@ function hideLoading() {
 }
 
 function showError(message) {
-   
-    alert(message); 
+    alert(message);
 }
+
+
+
 $(function () {
-
     const currentPage = '@Model.Page'?.toLowerCase() || 'home';
-
-
     $('[data-page]').removeClass('active');
     $(`[data-page="${currentPage}"]`).addClass('active');
-
 
     if (currentPage === 'home') {
         loadVideos();
     } else {
         console.log(`Loading ${currentPage} content...`);
-
     }
 });
+
 function loadVideos() {
     $('#loadingIndicator').show();
 
@@ -56,11 +54,9 @@ function loadVideos() {
 
                 if (result.totalCount > 0) {
                     $('#itemsPerPageDisplay').text(pageSize);
-
                     const from = (result.pageNumber - 1) * result.pageSize + 1;
                     const to = Math.min(result.pageNumber * result.pageSize, result.totalCount);
                     $('#paginationSummery').text(`${from}-${to} of ${result.totalCount}`);
-
                     buildPaginationButtons(result);
                 } else {
                     $('#itemsPerPageDropdown').hide();
@@ -126,24 +122,44 @@ function buildPaginationButtons(result) {
 
     $('#paginationBtnGroup').html(buttons);
 
-    // Initialize items per page dropdown
-    initItemsPerPageDropdown();
-
     // Single click handler for pagination buttons
     $('.paginationBtn').off('click').on('click', function () {
         pageNumber = parseInt($(this).data('value'));
-        loadVideos(); 
+        loadVideos();
+    });
+
+    $('.pageSizeBtn').on('click', function () {
+        const newPageSize = parseInt($(this).data('value'));
+        if (pageSize !== newPageSize) {
+            pageSize = newPageSize;
+            pageNumber = 1;
+            loadVideos();
+        }
+    });
+
+    // Dropdown change handler by category
+    $('#categoryDropdown').on('change', function () {
+        var selectedvalue = $(this).val();
+        categoryId = selectedvalue;
+        loadVideos();
+    });
+
+    //search functionality
+    $('#searchBtn').click(function () {
+        var search = $('#searchInput').val();
+        searchBy = search;
+        loadVideos();
+    });
+
+    //search input key up event
+    $('#searchInput').on('keyup', function (event) {
+        if (event.key === 'Enter' || event.keyCode === 13) {
+            var search = $(this).val();
+            searchBy = search;
+            loadVideos();
+        }
     });
 }
-
-$('.pageSizeBtn').on('click', function () {
-    const newPageSize = parseInt($(this).data('value'));
-    if (pageSize !== newPageSize) {
-        pageSize = newPageSize;
-        pageNumber = 1;
-        loadVideos();
-    }
-});
 
 function DisplayVideos(videos) {
     let divTag = '';
@@ -163,7 +179,7 @@ function DisplayVideos(videos) {
                     <a href="/Video/Watch/${v.id}" class="text-danger-emphasis" style="text-decoration: none;">${v.title}</a>
                     <div><span style="font-size: small">
                         <a href="/Member/Channel/${v.channelId}" style="text-decoration: none;" class="text-primary">${v.channelName}</a> <br />
-                        10K Views - 2 Years Ago</span>
+                        ${formatView(v.views)} - ${timeAgo(v.createdAt)}</span>
                     </div>
                 </div>
             </div>`;
