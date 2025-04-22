@@ -1,4 +1,5 @@
-﻿
+﻿@using TenVids.Utilities
+
 @model WatchVideoVM
 <style>
     video {
@@ -23,7 +24,7 @@
 <div class="row mt-3">
     <div class="col-lg-9 mb-2">
         <video controls>
-            <source src="/Video/GetVideoFile?id=@Model.Id" type="" />
+            <source src="/Video/GetVideoFile?videoId=@Model.Id" type="" />
             Your browser does not support the video tag.
         </video>
         <div class="d-flex justify-content-between mt-2">
@@ -32,6 +33,17 @@
                     <i class="bi bi-eye"></i><span id="view-count" class="ms-2">@Model.ViewsCount.ToString("N0")</span>
                 </span>
             </section>
-          </div>
+            <section class="d-flex align-content-center">
+                <button class="btn btn@(Model.IsLiked ? "" : "-outline")-dark font-btn me-1" id="likeBtn" onclick="likeDislike('likeBtn', 'like')">
+                    <i class="bi bi-hand-thumbs-up-fill"></i> <span class="ms-2">@SD.FormatView(Model.LikesCount)</span>
+                </button>
+                <button class="btn btn@(Model.IsDisliked ? "" : "-outline")-dark font-btn me-1" id="dislikeBtn" onclick="likeDislike('dislikeBtn', 'dislike')">
+                    <i class="bi bi-hand-thumbs-down-fill"></i> <span class="ms-2">@SD.FormatView(Model.DislikesCount)</span>
+                </button>
+                <form method="post">
+                    <button asp-action="DownloadVideo" asp-route-videoId="@Model.Id" type="submit" class="btn btn-outline-primary font-btn">Download</button>
+                </form>
+            </section>
         </div>
+    </div>
     </div>

@@ -274,6 +274,9 @@ namespace TenVids.Services
                 result.Description = video.Description;
                 result.CreatedAt = video.CreatedAt;
                 result.ChannelId = video.ChannelId;
+                result.IsLiked = true;
+                result.IsDisliked = true;
+
                 result.SubscribersCount=SD.GetRandomNumber(1, 5000, VideoId);
                 result.ViewsCount = SD.GetRandomNumber(10000, 500000, VideoId);
                 result.LikesCount = SD.GetRandomNumber(1, 100, VideoId);
@@ -285,6 +288,73 @@ namespace TenVids.Services
             return null;
             
         }
+        public async Task<ErrorModel<VideoFileDto>> DownloadVideoFileAsync(int id)
+        {
+            try
+            {
+              
+                var videoFile = await _unitOfWork.VideoFileRepository.GetQueryable()
+                    .Include(vf => vf.Video) 
+                    .FirstOrDefaultAsync(vf => vf.VideoId == id);
+
+                if (videoFile == null)
+                {
+                    return ErrorModel<VideoFileDto>.Failure("Video file not found", 404);
+                }
+
+                if (videoFile.Video == null)
+                {
+                    return ErrorModel<VideoFileDto>.Failure("Associated video not found", 404);
+                }
+
+                return ErrorModel<VideoFileDto>.Success(
+                    new VideoFileDto
+                    {
+                        Contents = videoFile.Contents,
+                        ContentType = videoFile.ContentType,
+                        FileName = $"{videoFile.Video.Title}{videoFile.Extension}"
+                    },
+                    "Video file retrieved successfully");
+            }
+            catch (Exception ex)
+            {
+                
+                return ErrorModel<VideoFileDto>.Failure("Error retrieving video file", 500);
+            }
+        }
+
+        //public async Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
+        //{
+        //    var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
+        //    if (video == null)
+        //    {
+        //        return ErrorModel<Videos>.Failure("Video not found", 404);
+        //    }
+
+        //    video.Title = model.Title;
+        //    video.Description = model.Description;
+        //    video.CategoryId = model.CategoryId;
+
+        //    if (model.ImageUpload != null)
+        //    {
+        //        video.Thumbnail = _picService.UploadPics(model.ImageUpload);
+        //    }
+        //    else
+        //    {
+        //        video.Thumbnail = model.ImageUrl;
+        //    }
+
+        //    if (model.VideoUpload != null)
+        //    {
+        //        video.VideoFile.ContentType = model.VideoUpload.ContentType;
+        //        video.VideoFile.Contents = await ProcessUploadedFiles(model.VideoUpload);
+        //    }
+
+        //    _unitOfWork.VideosRepository.Update(video);
+        //    await _unitOfWork.CompleteAsync();
+
+        //    return ErrorModel<Videos>.Success(video, "Video updated successfully");
+        //}
         public async Task<VideoFileDto?> GetVideoFileAsync(int id)
         {
             if (id <= 0) return null;

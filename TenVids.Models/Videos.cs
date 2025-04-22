@@ -29,7 +29,5 @@ namespace TenVids.Models
 
         public ICollection<VideoViews>? VideoViewers { get; set; }
 
-
-
     }
 }

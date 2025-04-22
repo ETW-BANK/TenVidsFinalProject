@@ -85,5 +85,58 @@ namespace TenVids.Utilities
                _ => ".mp4" // Default case   
             };
         }
+        public static string FormatView(int views)
+        {
+            if (views >= 1000000)
+            {
+                return (views / 1000000).ToString() + "M";
+            }
+            else if (views >= 1000)
+            {
+                return (views / 1000).ToString() + "K";
+            }
+            else
+            {
+                return views.ToString();
+            }
+        }
+
+        public static string TimeAgo(DateTime dateTime)
+        {
+            DateTime now = DateTime.UtcNow;
+            TimeSpan timeSpan = now - dateTime;
+
+            double totalSeconds = Math.Floor(timeSpan.TotalSeconds);
+            double minutes = Math.Floor(timeSpan.TotalMinutes);
+            double hours = Math.Floor(timeSpan.TotalHours);
+            double days = Math.Floor(timeSpan.TotalDays);
+            double months = Math.Floor(days / 30);
+            double years = Math.Floor(days / 365);
+
+            if (totalSeconds < 60)
+            {
+                return "Just now";
+            }
+            else if (minutes < 60)
+            {
+                return $"{minutes} minute{(minutes != 1 ? "s" : "")} ago";
+            }
+            else if (hours < 24)
+            {
+                return $"{hours} hour{(hours != 1 ? "s" : "")} ago";
+            }
+            else if (days < 30)
+            {
+                return $"{days} day{(days != 1 ? "s" : "")} ago";
+            }
+            else if (days < 365)
+            {
+                return $"{months} month{(months != 1 ? "s" : "")} ago";
+            }
+            else
+            {
+                return $"{years} year{(years != 1 ? "s" : "")} ago";
+            }
+        }
     }
 }

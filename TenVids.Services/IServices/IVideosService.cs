@@ -25,6 +25,7 @@ namespace TenVids.Services.IServices
 
         Task<WatchVideoVM> GetvideoToWatchAsync(int VideoId);
         Task<VideoFileDto?> GetVideoFileAsync(int id);
+        Task<ErrorModel<VideoFileDto>> DownloadVideoFileAsync(int id);
 
 
     }

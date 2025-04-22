@@ -86,17 +86,17 @@ namespace TenVids.Application.Controllers
             return View(result);
         }
 
-        public async Task<IActionResult> GetVideoFile(int? id)
+        public async Task<IActionResult> GetVideoFile(int? videoId)
         {
             try
             {
-                if (!id.HasValue || id <= 0)
+                if (!videoId.HasValue || videoId <= 0)
                 {
                     TempData["error"] = "Invalid video request";
                     return RedirectToAction("Index", "Home");
                 }
 
-                var videoFile = await _videosService.GetVideoFileAsync(id.Value);
+                var videoFile = await _videosService.GetVideoFileAsync(videoId.Value);
 
                 if (videoFile == null)
                 {
@@ -113,6 +113,19 @@ namespace TenVids.Application.Controllers
             }
         }
 
+       
+        public async Task<IActionResult> DownloadVideo(int videoId)
+        {
+            var result = await _videosService.DownloadVideoFileAsync(videoId);
+
+            if (result==null)
+            {
+                TempData["error"] = result.Message;
+                return RedirectToAction("Index", "Home");
+            }
+
+            return File(result.Data.Contents,result.Data.ContentType,result.Data.FileName);
+        }
 
         #region API Calls
         [HttpGet]
