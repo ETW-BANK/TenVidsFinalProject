@@ -1,7 +1,5 @@
-﻿
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
-
 
 namespace TenVids.Models
 {
@@ -15,12 +13,8 @@ namespace TenVids.Models
         public string Title { get; set; }
         [Required]
         public string Description { get; set; }
-        [Required]
-        public string ContentType { get; set; }
-
+      
         public DateTime CreatedAt { get; set; } = DateTime.Now;
-        [Required]
-        public byte[] Contents { get; set; }
         public int CategoryId { get; set; }
         public int ChannelId { get; set; }
         [ForeignKey("CategoryId")]
@@ -28,7 +22,7 @@ namespace TenVids.Models
 
         [ForeignKey("ChannelId")]
         public Channel Channel { get; set; }   
-        
+        public  VideoFiles? VideoFile { get; set; }
         public ICollection<Comment>? Comments { get; set; } 
 
         public ICollection<Likes>? Likes { get; set; }    

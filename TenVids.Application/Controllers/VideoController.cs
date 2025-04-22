@@ -74,11 +74,43 @@ namespace TenVids.Application.Controllers
 
      
 
-        public IActionResult WatchVideos(int id)
+        public async Task<IActionResult> WatchVideos(int id)
         {
+            var result=await _videosService.GetvideoToWatchAsync(id);
+            if (result == null)
+            {
+                TempData["error"] = "Video not found";
+                return RedirectToAction("Index", "Home");
+            }
 
+            return View(result);
+        }
 
-            return View();
+        public async Task<IActionResult> GetVideoFile(int? id)
+        {
+            try
+            {
+                if (!id.HasValue || id <= 0)
+                {
+                    TempData["error"] = "Invalid video request";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                var videoFile = await _videosService.GetVideoFileAsync(id.Value);
+
+                if (videoFile == null)
+                {
+                    TempData["error"] = "Video not found";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                return File(videoFile.Contents, videoFile.ContentType);
+            }
+            catch (Exception ex)
+            { 
+                TempData["error"] = "Error loading video";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
 

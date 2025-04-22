@@ -48,5 +48,42 @@ namespace TenVids.Utilities
             }
             return isPageMatch ? "active" : string.Empty;
         }
+
+        public static string GetContentType(string fileextension)
+        {
+            return fileextension switch
+            {
+
+                ".mp4" => "video/mp4",
+                ".mov"=> "video/quicktime",
+                ".avi"=> "video/x-msvideo",
+                ".mwv"=> "video/x-ms-wmv",
+                ".flv"=>"video/x-flv",
+                ".mkv"=> "video/x-matroska",
+                ".webm" => "video/webm",
+                ".ogv" => "video/ogg",
+                ".3gp" => "video/3gpp",
+                ".3g2" => "video/3gpp2",
+                _ => "video/mp4" // Default case
+
+            };
+        }
+        public static string GetExtension(string contentType)
+        {
+            return contentType switch
+            {
+                "video/mp4" => ".mp4",
+                "video/quicktime"=>".mov",
+                "video/x-msvideo"=>".avi",
+                "video/x-ms-wmv" => ".wmv",
+                "video/x-flv" => ".flv",
+                "video/x-matroska" => ".mkv",
+                "video/webm" => ".webm",
+                "video/ogg" => ".ogv",
+                "video/3gpp" => ".3gp",
+                "video/3gpp2" => ".3g2",
+               _ => ".mp4" // Default case   
+            };
+        }
     }
 }

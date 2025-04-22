@@ -44,7 +44,7 @@ namespace TenVids.Services
             var paginatedList = await GetVideos(parameters);
 
             return new PaginatedResult<VideoForHomeDto>(
-                items: paginatedList.ToList(),  // Convert to IReadOnlyList
+                items: paginatedList.ToList(), 
                 totalCount: paginatedList.TotalCount,
                 pageSize: parameters.PageSize,
                 pageNumber: parameters.PageNumber,
@@ -263,8 +263,43 @@ namespace TenVids.Services
             }
             return false;
         }
-    
+        public async Task<WatchVideoVM> GetvideoToWatchAsync(int VideoId)
+        {
+            var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == VideoId);
+            if(video!=null)
+            {
+                var result = new WatchVideoVM();
+                result.Id = video.Id;
+                result.Title = video.Title;
+                result.Description = video.Description;
+                result.CreatedAt = video.CreatedAt;
+                result.ChannelId = video.ChannelId;
+                result.SubscribersCount=SD.GetRandomNumber(1, 5000, VideoId);
+                result.ViewsCount = SD.GetRandomNumber(10000, 500000, VideoId);
+                result.LikesCount = SD.GetRandomNumber(1, 100, VideoId);
+                result.DislikesCount = SD.GetRandomNumber(1, 100, VideoId);
 
+                return result; 
+            }
+
+            return null;
+            
+        }
+        public async Task<VideoFileDto?> GetVideoFileAsync(int id)
+        {
+            if (id <= 0) return null;
+
+            return await _unitOfWork.VideosRepository.GetQueryable()
+                .Where(v => v.Id == id)
+                .Select(v => new VideoFileDto
+                {
+                    Contents = v.VideoFile.Contents,
+                    ContentType = v.VideoFile.ContentType,
+                  
+                })
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+        }
         public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
         {
             throw new NotImplementedException();
@@ -416,8 +451,12 @@ namespace TenVids.Services
                 CategoryId = model.CategoryId,
                 ChannelId = channelId,
                 Thumbnail = _picService.UploadPics(model.ImageUpload),
-                ContentType = model.VideoUpload.ContentType,
-                Contents = ProcessUploadedFiles(model.VideoUpload).GetAwaiter().GetResult(),
+                VideoFile = new VideoFiles
+                {
+                    ContentType = model.VideoUpload.ContentType,
+                    Contents=ProcessUploadedFiles(model.VideoUpload).GetAwaiter().GetResult(),
+                    Extension=SD.GetExtension(model.VideoUpload.ContentType),
+                },
             };
 
             _unitOfWork.VideosRepository.Add(newVideo);
@@ -446,14 +485,19 @@ namespace TenVids.Services
             }
             if (model.VideoUpload != null)
             {
-                existingVideo.ContentType = model.VideoUpload.ContentType;
-                existingVideo.Contents = videoBytes;
+
+                existingVideo.VideoFile.ContentType = model.VideoUpload.ContentType;
+                existingVideo.VideoFile.Contents = videoBytes;
             }
 
             _unitOfWork.VideosRepository.UpdateAsync(existingVideo);
             await _unitOfWork.CompleteAsync();
             return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
         }
+
+       
+
+
 
 
         #endregion

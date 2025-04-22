@@ -16,19 +16,19 @@ namespace TenVids.Repository
         }
         public IChannelRepository ChannelRepository => new ChannelRepository(_context); 
         public IVideosRepository VideosRepository => new VideosRepository(_context);
-
-      public ICategoryRepository CategoryRepository => new CategoryRepository(_context);
+        public IVideoFileRepository VideoFileRepository => new VideoFileRepository(_context);   
+        public ICategoryRepository CategoryRepository => new CategoryRepository(_context);
         public async Task<bool> CompleteAsync()
         {
             try
             {
-                // Always attempt to save changes regardless of HasChanges()
+               
                 int changes = await _context.SaveChangesAsync();
-                return true; // EF Core will throw if there are problems
+                return true; 
             }
             catch (DbUpdateException)
             {
-                // Log the exception if needed
+               
                 return false;
             }
         }

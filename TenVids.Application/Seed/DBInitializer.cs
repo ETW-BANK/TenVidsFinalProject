@@ -141,11 +141,16 @@ namespace TenVids.Seed
                     {
                         Title = title,
                         Description = description,
-                        ContentType = videoFiles[i].Extension,
+                        VideoFile = new VideoFiles
+                        {
+
+                            ContentType = SD.GetContentType( videoFiles[i].Extension),
+                            Contents = ConvertToByteArray(videoFile).GetAwaiter().GetResult(),
+                            Extension = videoFiles[i].Extension,
+                        },
                         Thumbnail = pictureService.UploadPics(imageFile),
                         CategoryId = categoryid,
                         ChannelId = (i % 2 == 0) ? tensaeschannel.Id : dinoschannel.Id,
-                        Contents = ConvertToByteArray(videoFile).GetAwaiter().GetResult(),
                         CreatedAt = SD.GetRandomDate(new System.DateTime(2023, 1, 1), DateTime.UtcNow, i),
                     };
                     context.Videos.Add(videotoadd);
