@@ -8,6 +8,8 @@ using TenVids.Models.Pagination;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.ViewModels;
+using System.Linq;
+using TenVids.Services.Extensions;
 
 namespace TenVids.Application.Controllers
 {
@@ -16,11 +18,13 @@ namespace TenVids.Application.Controllers
     {
 
         private readonly IVideosService _videosService;
-        
-        public VideoController(IVideosService videosService)
+        private readonly IChannelService _channelService;
+
+        public VideoController(IVideosService videosService,IChannelService channelService)
         {
             _videosService = videosService;
-          
+            _channelService = channelService;
+
 
         }
         [HttpGet]
@@ -76,7 +80,7 @@ namespace TenVids.Application.Controllers
 
         public async Task<IActionResult> WatchVideos(int id)
         {
-            var result=await _videosService.GetvideoToWatchAsync(id);
+            var result=await _videosService.GetVideoToWatchAsync(id);
             if (result == null)
             {
                 TempData["error"] = "Video not found";
@@ -157,7 +161,29 @@ namespace TenVids.Application.Controllers
                 return Json(new ApiResponse(500, "An error occurred while deleting the video"));
             }
         }
+        [HttpPut]
+        public async Task<IActionResult> SubscribeChannel(int channelId)
+        {
+            var result = await _channelService.Subscribe(channelId);
 
-         #endregion
+            if (!result.IsSuccess)
+            {
+                return Json(new ApiResponse(result.StatusCode, result.Message));    
+
+            }
+            else if (result.Data.Subscribers == null || !result.Data.Subscribers.Any())
+             {
+                    return Json(new ApiResponse(200, "Unsubscribed", "Unsubscribed"));
+             }
+            else if (result.Data.Subscribers.Any(s => s.AppUserId == User.GetUserId() && s.ChannelId == channelId))
+            {
+              return Json(new ApiResponse(200, "Subscribed", "Subscribed"));    
+            }
+
+
+            return Json(new ApiResponse(400, message: "Channel not found"));
+
+        }
+        #endregion
     }
 }

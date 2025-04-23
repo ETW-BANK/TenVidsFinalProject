@@ -9,17 +9,20 @@ using TenVids.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 
+
 namespace TenVids.Services
 {
     public class ChannelService:IChannelService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor? _httpContextAccessor;
+      
 
         public ChannelService(IUnitOfWork unitOfWork, IHttpContextAccessor? httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
+         
         }
 
         public async Task<ChannelAddEditVM> GetUserChannelAsync()
@@ -125,6 +128,43 @@ namespace TenVids.Services
 
 
             return channel;
+        }
+
+        public async Task<ErrorModel<Channel>> Subscribe(int channelId)
+        {
+            try
+            {
+                var channel = await _unitOfWork.ChannelRepository
+                    .GetFirstOrDefaultAsync(c => c.Id == channelId, "Subscribers", tracked: true);
+
+                if (channel == null)
+                    return ErrorModel<Channel>.Failure("Channel not found", 404);
+
+                var currentUserId = _httpContextAccessor.HttpContext.User.GetUserId();
+
+                if (string.IsNullOrEmpty(currentUserId))
+                    return ErrorModel<Channel>.Failure("User not authenticated", 401);
+
+                channel.Subscribers ??= []; 
+
+                var existingSubscription = channel.Subscribers
+                    .FirstOrDefault(s => s.AppUserId == currentUserId && s.ChannelId == channelId);
+
+                if (existingSubscription == null)
+                {
+                    channel.Subscribers.Add(new Subscribe(currentUserId, channelId));
+                    await _unitOfWork.CompleteAsync();
+                    return ErrorModel<Channel>.Success(channel, "Successfully subscribed");
+                }
+
+                channel.Subscribers.Remove(existingSubscription);
+                await _unitOfWork.CompleteAsync();
+                return ErrorModel<Channel>.Success(channel, "Successfully unsubscribed");
+            }
+            catch (Exception ex)
+            {
+                return ErrorModel<Channel>.Failure("An error occurred while processing your request", 500);
+            }
         }
     }
 }

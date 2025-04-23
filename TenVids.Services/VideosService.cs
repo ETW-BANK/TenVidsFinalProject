@@ -13,6 +13,7 @@ using TenVids.Models.Pagination;
 using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 
 namespace TenVids.Services
@@ -263,31 +264,47 @@ namespace TenVids.Services
             }
             return false;
         }
-        public async Task<WatchVideoVM> GetvideoToWatchAsync(int VideoId)
+        public async Task<WatchVideoVM> GetVideoToWatchAsync(int videoId)
         {
-            var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == VideoId);
-            if(video!=null)
+            // Get video from repository with deep includes
+            var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
+                x => x.Id == videoId,
+                includeProperties: "Channel.Subscribers");  
+
+            // Extract the current logged-in user's ID
+            var userId = _httpContextAccessor?.HttpContext?.User.GetUserId();
+
+            if (video == null)
             {
-                var result = new WatchVideoVM();
-                result.Id = video.Id;
-                result.Title = video.Title;
-                result.Description = video.Description;
-                result.CreatedAt = video.CreatedAt;
-                result.ChannelId = video.ChannelId;
-                result.IsLiked = true;
-                result.IsDisliked = true;
-
-                result.SubscribersCount=SD.GetRandomNumber(1, 5000, VideoId);
-                result.ViewsCount = SD.GetRandomNumber(10000, 500000, VideoId);
-                result.LikesCount = SD.GetRandomNumber(1, 100, VideoId);
-                result.DislikesCount = SD.GetRandomNumber(1, 100, VideoId);
-
-                return result; 
+                return null; 
             }
 
-            return null;
+          
+            var result = new WatchVideoVM
+            {
+                Id = video.Id,
+                Title = video.Title ?? string.Empty, 
+                Description = video.Description ?? string.Empty,  
+                CreatedAt = video.CreatedAt,
+                ChannelId = video.ChannelId,
+                ChannelName = video.Channel?.Name ?? string.Empty,  
+                IsSubscribed = video.Channel?.Subscribers?.Any(x => x.AppUserId == userId) ?? false,
+
+             
+                IsLiked = true,
+                IsDisliked = true,
+
             
+                SubscribersCount = SD.GetRandomNumber(1, 5000, videoId),
+                ViewsCount = SD.GetRandomNumber(10000, 500000, videoId),
+                LikesCount = SD.GetRandomNumber(1, 100, videoId),
+                DislikesCount = SD.GetRandomNumber(1, 100, videoId)
+            };
+
+            return result;
         }
+
+
         public async Task<ErrorModel<VideoFileDto>> DownloadVideoFileAsync(int id)
         {
             try

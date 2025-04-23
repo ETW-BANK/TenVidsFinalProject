@@ -23,9 +23,10 @@ namespace TenVids.Services.IServices
 
         Task<PaginatedResult<VideoGridChannelDto>> GetVideosForChannelAsync(BaseParams parameters);
 
-        Task<WatchVideoVM> GetvideoToWatchAsync(int VideoId);
+        Task<WatchVideoVM> GetVideoToWatchAsync(int videoId);
         Task<VideoFileDto?> GetVideoFileAsync(int id);
         Task<ErrorModel<VideoFileDto>> DownloadVideoFileAsync(int id);
+
 
 
     }

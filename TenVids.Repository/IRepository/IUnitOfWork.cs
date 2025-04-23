@@ -7,6 +7,7 @@ namespace TenVids.Repository.IRepository
         ICategoryRepository CategoryRepository { get; }
         IVideosRepository VideosRepository { get; }
         IVideoFileRepository VideoFileRepository { get; }
+      
 
         Task <bool> CompleteAsync();
     }

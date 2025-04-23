@@ -125,15 +125,16 @@ namespace TenVids.Repository
             _context.Update(entity);
         }
         #region Static Method
-        public static IQueryable<T> GetWithProperties(IQueryable<T> query, string includeProperties)
+        public static IQueryable<T> GetWithProperties<T>(IQueryable<T> query, string includeProperties) where T : class
         {
-           var prop=includeProperties.Split(
-                              new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-
+            foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                query = query.Include(includeProp.Trim());
+            }
             return query;
         }
 
-        
+
         #endregion
     }
 

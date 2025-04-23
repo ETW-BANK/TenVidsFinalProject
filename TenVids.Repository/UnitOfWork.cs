@@ -18,6 +18,7 @@ namespace TenVids.Repository
         public IVideosRepository VideosRepository => new VideosRepository(_context);
         public IVideoFileRepository VideoFileRepository => new VideoFileRepository(_context);   
         public ICategoryRepository CategoryRepository => new CategoryRepository(_context);
+   
         public async Task<bool> CompleteAsync()
         {
             try

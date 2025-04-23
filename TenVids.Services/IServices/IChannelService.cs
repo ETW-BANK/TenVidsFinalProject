@@ -13,5 +13,7 @@ namespace TenVids.Services.IServices
         Task<ErrorModel<Channel>> UpdateChannelAsync(ChannelAddEditVM model);
         Task DeleteChannelAsync(Channel model);
         Task<Channel> GetChannelByIdAsync(int id);
+
+        Task<ErrorModel<Channel>> Subscribe(int channelId);
     }
 }

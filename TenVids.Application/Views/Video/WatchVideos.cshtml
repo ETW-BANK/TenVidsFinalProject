@@ -46,4 +46,53 @@
             </section>
         </div>
     </div>
+    <div class="col-lg-3">
+        <div class="card border-secondary mb-3">
+            <div class="card-header">
+                <p class="text-danger-emphasis h4">@Model.Title</p>
+                <p>@SD.TimeAgo(Model.CreatedAt)</p>
+                <div class="d-flex align-content-center justify-content-between">
+                    <div>
+                        <a asp-action="Member" asp-controller="channel" asp-route-id="@Model.ChannelId" class="text-primary text-decoration-none">@Model.ChannelName</a>
+                        <p class="text-muted small mb-0">@SD.FormatView(Model.SubscribersCount) subscribers</p>
+                    </div>
+                    <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-light text-dark" : "btn-danger") rounded-pill fw-bold" style="@(Model.IsSubscribed ? "border: 1px solid #ccc;" : "")">
+                        @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    @Model.Description  
+                </p>
+            </div> 
+        </div>
     </div>
+    </div>
+
+   @section Scripts {
+    <script>
+        $('#subscribeBtn').on('click', function () {
+            $.ajax({
+                url: "/Video/SubscribeChannel",
+                type: "PUT",
+                data: { channelId: '@Model.ChannelId' },
+                success: function (data) {
+                    if (data.title == "Unsubscribed") {
+                        $('#subscribeBtn').removeClass('btn-dark');
+                        $('#subscribeBtn').addClass('btn-outline-dark');
+                        $('#subscribeBtn').text('Subscribe');
+                        displayNotification(false, data.title, data.message, 'toastr');
+                    } else if (data.title == "Subscribed") {
+                        $('#subscribeBtn').removeClass('btn-outline-dark');
+                        $('#subscribeBtn').addClass('btn-dark');
+                        $('#subscribeBtn').text('Subscribed');
+                        displayNotification(true, data.title, data.message, 'toastr');
+                    } else {
+                        displayNotification(data.isSuccess, data.title, data.message, 'modal');
+                    }
+                }
+            })
+        });
+    </script>
+}
