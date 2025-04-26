@@ -9,6 +9,7 @@ using TenVids.Models;
 using TenVids.Repository;
 using TenVids.Repository.IRepository;
 using TenVids.Services;
+using TenVids.Services.HelperMethods;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.Utilities.FileHelpers;
@@ -35,6 +36,7 @@ namespace TenVids.Service.Extensions
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IChannelService, ChannelService>();
             services.AddScoped<IPicService,PicService>();
+            services.AddScoped<IHelper, Helper>();
             services.AddScoped<IHomeService,HomeService>();
             services.Configure<FileUploadConfig>(configuration.GetSection("FileUpload"));
             services.AddHttpContextAccessor();
@@ -73,5 +75,4 @@ namespace TenVids.Service.Extensions
         }
     }
 
-    
 }

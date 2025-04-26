@@ -1,8 +1,6 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TenVids.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-
 
 namespace TenVids.Data.Access.Data
 {
@@ -11,12 +9,11 @@ namespace TenVids.Data.Access.Data
         public DbSet<Channel> Channels { get; set; }
         public DbSet<Videos> Videos { get; set; }
         public DbSet<Category> Categories { get; set; }
-     
+
         public TenVidsApplicationContext(DbContextOptions<TenVidsApplicationContext> option): base(option)    
         {
             
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -24,20 +21,17 @@ namespace TenVids.Data.Access.Data
             modelBuilder.Entity<Comment>()
          .HasKey(c => new { c.AppUserId, c.VideoId }); 
 
-           
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.AppUser)
                 .WithMany(u => u.Comments)
                 .HasForeignKey(c => c.AppUserId)
                 .OnDelete(DeleteBehavior.Cascade); 
 
-          
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.Video)
                 .WithMany(v => v.Comments)
                 .HasForeignKey(c => c.VideoId)
                 .OnDelete(DeleteBehavior.Restrict);
-
 
             modelBuilder.Entity<Subscribe>()
                 .HasKey(s => new { s.AppUserId, s.ChannelId });
@@ -83,9 +77,7 @@ namespace TenVids.Data.Access.Data
                 .HasForeignKey(v => v.VideoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-
         }
-
 
     }
 }

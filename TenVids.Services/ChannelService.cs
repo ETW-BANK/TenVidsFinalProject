@@ -1,5 +1,4 @@
-﻿
-using TenVids.Repository.IRepository;
+﻿using TenVids.Repository.IRepository;
 using TenVids.Services.IServices;
 using TenVids.ViewModels;
 using Microsoft.AspNetCore.Http;
@@ -8,16 +7,13 @@ using TenVids.Models;
 using TenVids.Utilities;
 using Microsoft.EntityFrameworkCore;
 
-
-
 namespace TenVids.Services
 {
     public class ChannelService:IChannelService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor? _httpContextAccessor;
-      
-
+ 
         public ChannelService(IUnitOfWork unitOfWork, IHttpContextAccessor? httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
@@ -38,7 +34,6 @@ namespace TenVids.Services
             return null;
 
         }
-
         public async Task<ErrorModel<Channel>> CreateChannelAsync(ChannelAddEditVM model)
         {
             var ChannelExists= await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x=>x.Name==model.Name);
@@ -104,7 +99,6 @@ namespace TenVids.Services
                 return ErrorModel<Channel>.Failure("Failed to update channel.", 500);
             }
         }
-
         public async Task DeleteChannelAsync(Channel model)
         {
             model = _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(c => c.Id == model.Id).Result;
@@ -129,7 +123,6 @@ namespace TenVids.Services
 
             return channel;
         }
-
         public async Task<ErrorModel<Channel>> Subscribe(int channelId)
         {
             try

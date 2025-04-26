@@ -66,7 +66,7 @@ namespace TenVids.Repository
             return await query.ToListAsync();
         }
         public IQueryable<T> GetQueryable( Expression<Func<T, bool>> filter = null, string includeProperties = null,
-    Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null)
+         Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null)
         {
             IQueryable<T> query = _dbSet;
 

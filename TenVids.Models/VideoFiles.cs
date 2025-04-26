@@ -6,7 +6,6 @@ namespace TenVids.Models
 {
   public class VideoFiles:BaseEntity
     {
-       
         [Required]
         public string ContentType { get; set; }
         [Required]

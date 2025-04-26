@@ -1,5 +1,4 @@
-﻿
-using TenVids.Models;
+﻿using TenVids.Models;
 
 namespace TenVids.Repository.IRepository
 {

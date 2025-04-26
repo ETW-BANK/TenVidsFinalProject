@@ -1,5 +1,4 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TenVids.Application.Controllers.Requests;
 using System;
@@ -16,15 +15,12 @@ namespace TenVids.Application.Controllers
     [Authorize(Roles = $"{SD.UserRole}")]
     public class VideoController : Controller
     {
-
         private readonly IVideosService _videosService;
         private readonly IChannelService _channelService;
-
         public VideoController(IVideosService videosService,IChannelService channelService)
         {
             _videosService = videosService;
             _channelService = channelService;
-
 
         }
         [HttpGet]
@@ -35,7 +31,6 @@ namespace TenVids.Application.Controllers
                 TempData["error"] = "You need to create a channel first";
                 return RedirectToAction("CreateChannel", "Channel");
             }
-
             try
             {
                 var videoVM = await _videosService.GetVideoByIdAsync(id);
@@ -52,7 +47,6 @@ namespace TenVids.Application.Controllers
                 return RedirectToAction("Index", "Home");
             }
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(VideoVM videoVM)
@@ -73,11 +67,8 @@ namespace TenVids.Application.Controllers
             }
 
             TempData["success"] = result.Message;
-            return RedirectToAction("Index", "Channel");
+             return RedirectToAction("Index", "Channel");
         }
-
-     
-
         public async Task<IActionResult> WatchVideos(int id)
         {
             var result=await _videosService.GetVideoToWatchAsync(id);
@@ -89,7 +80,6 @@ namespace TenVids.Application.Controllers
 
             return View(result);
         }
-
         public async Task<IActionResult> GetVideoFile(int? videoId)
         {
             try
@@ -117,11 +107,9 @@ namespace TenVids.Application.Controllers
             }
         }
 
-       
         public async Task<IActionResult> DownloadVideo(int videoId)
         {
             var result = await _videosService.DownloadVideoFileAsync(videoId);
-
             if (result==null)
             {
                 TempData["error"] = result.Message;
@@ -130,8 +118,7 @@ namespace TenVids.Application.Controllers
 
             return File(result.Data.Contents,result.Data.ContentType,result.Data.FileName);
         }
-
-        #region API Calls
+        #region API CALLS
         [HttpGet]
         public async Task<IActionResult>GetVideosForChannelGrid(BaseParams parameters)
         {
@@ -139,25 +126,21 @@ namespace TenVids.Application.Controllers
 
             return Json(new ApiResponse(200, result: result));
         }
-
         [HttpDelete]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteVideo([FromBody] RequestParams request)
         {
             try
             {
-        
                 if (request?.Id <= 0)
                 {
                     return Json(new ApiResponse(400, "Invalid video ID"));
                 }
-
                 var result = await _videosService.DeleteVideoAsync(request.Id);
                 return Json(new ApiResponse(result.IsSuccess ? 200 : result.StatusCode, result.Message));
             }
             catch (Exception ex)
             {
-              
                 return Json(new ApiResponse(500, "An error occurred while deleting the video"));
             }
         }
@@ -165,11 +148,9 @@ namespace TenVids.Application.Controllers
         public async Task<IActionResult> SubscribeChannel(int channelId)
         {
             var result = await _channelService.Subscribe(channelId);
-
             if (!result.IsSuccess)
             {
                 return Json(new ApiResponse(result.StatusCode, result.Message));    
-
             }
             else if (result.Data.Subscribers == null || !result.Data.Subscribers.Any())
              {
@@ -179,10 +160,7 @@ namespace TenVids.Application.Controllers
             {
               return Json(new ApiResponse(200, "Subscribed", "Subscribed"));    
             }
-
-
             return Json(new ApiResponse(400, message: "Channel not found"));
-
         }
         #endregion
     }

@@ -1,20 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using TenVids.Models;
 using TenVids.Repository.IRepository;
 using TenVids.Services.Extensions;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.ViewModels;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using TenVids.Utilities.FileHelpers;
 using TenVids.Models.Pagination;
 using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using System.Security.Claims;
-
+using TenVids.Services.HelperMethods;
 
 namespace TenVids.Services
 {
@@ -22,18 +17,17 @@ namespace TenVids.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor? _httpContextAccessor;
-        private readonly IConfiguration _configuration;
         private readonly FileUploadConfig _fileUploadConfig;
-        private readonly IPicService _picService;
       
-        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor, IConfiguration configuration, IOptions<FileUploadConfig> fileUploadConfig,IPicService picService,ILogger<VideosService> logger)
+        private readonly IHelper _helper;
+      
+        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor,  IOptions<FileUploadConfig> fileUploadConfig,IHelper helper)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
-            _picService = picService;
-            _configuration = configuration;
             _fileUploadConfig = fileUploadConfig.Value;
-            
+            _helper = helper;
+     
         }
         public async Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters)
         {
@@ -42,7 +36,7 @@ namespace TenVids.Services
             {
                 throw new UnauthorizedAccessException("User not authenticated");
             }
-            var paginatedList = await GetVideos(parameters);
+            var paginatedList = await _helper.GetVideos(parameters);
 
             return new PaginatedResult<VideoForHomeDto>(
                 items: paginatedList.ToList(), 
@@ -84,9 +78,9 @@ namespace TenVids.Services
             if (model.ImageUpload == null)
                 return ErrorModel<Videos>.Failure("Image thumbnail is required", 400);
 
-            if (!IsAcceptableContentType("image", model.ImageUpload.ContentType))
+            if (!_helper.IsAcceptableContentType("image", model.ImageUpload.ContentType))
             {
-                var allowedTypes = AcceptableContentTypes("image");
+                var allowedTypes =_helper.AcceptableContentTypes("image");
                 return ErrorModel<Videos>.Failure(
                     $"Invalid image type. Allowed: {string.Join(", ", allowedTypes)}",
                     400);
@@ -100,9 +94,9 @@ namespace TenVids.Services
             if (model.VideoUpload == null)
                 return ErrorModel<Videos>.Failure("Video file is required", 400);
 
-            if (!IsAcceptableContentType("video", model.VideoUpload.ContentType))
+            if (!_helper.IsAcceptableContentType("video", model.VideoUpload.ContentType))
             {
-                var allowedTypes = AcceptableContentTypes("video");
+                var allowedTypes = _helper.AcceptableContentTypes("video");
                 return ErrorModel<Videos>.Failure(
                     $"Invalid video type. Allowed: {string.Join(", ", allowedTypes)}",
                     400);
@@ -114,20 +108,19 @@ namespace TenVids.Services
                     400);
 
             // Process uploaded files
-            var thumbnailBytes = await ProcessUploadedFiles(model.ImageUpload);
-            var videoBytes = await ProcessUploadedFiles(model?.VideoUpload);
+            var thumbnailBytes = await _helper.ProcessUploadedFiles(model.ImageUpload);
+            var videoBytes = await _helper.ProcessUploadedFiles(model?.VideoUpload);
 
 
             if (model.Id == 0)
             {
-                return await CreateNewVideos(model, userChannel.Id, thumbnailBytes, videoBytes);
+                return await _helper.CreateNewVideos(model, userChannel.Id, thumbnailBytes, videoBytes);
             }
             else
             {
-                return await UpdateExistingVideo(model, thumbnailBytes, videoBytes);
+                return await _helper.UpdateExistingVideo(model, thumbnailBytes, videoBytes);
             }
         }
-
         public async Task<PaginatedResult<VideoGridChannelDto>> GetVideosForChannelAsync(BaseParams parameters)
         {
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
@@ -149,7 +142,6 @@ namespace TenVids.Services
                             Dislikes = SD.GetRandomNumber(5, 100, video.Id)
                         };
 
-           
             query = parameters.SortBy switch
             {
                 "title-a" => query.OrderBy(x => x.Title),
@@ -177,7 +169,7 @@ namespace TenVids.Services
    
             try
             {
-                var userId = _httpContextAccessor.HttpContext.User.GetUserId();
+                var userId = _httpContextAccessor?.HttpContext?.User.GetUserId();
 
                 var existingVideo = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                     x => x.Id == id && x.Channel.AppUserId == userId,
@@ -188,15 +180,12 @@ namespace TenVids.Services
 
                     return ErrorModel<Videos>.Failure("Video not found or you don't have permission", 404);
                 }
-
                 _unitOfWork.VideosRepository.Remove(existingVideo);
                 await _unitOfWork.CompleteAsync();
-
                 return ErrorModel<Videos>.Success(existingVideo, $"Video '{existingVideo.Title}' deleted successfully");
             }
             catch (Exception ex)
             {
-             
                 return ErrorModel<Videos>.Failure("An error occurred while deleting the video", 500);
             }
         }
@@ -204,7 +193,7 @@ namespace TenVids.Services
         {
             var result = await _unitOfWork.VideosRepository.GetAllAsync(
                                includeProperties: "Category,Channel",
-                                              orderby: GetOrderByExpression("date-d"));
+                                              orderby:_helper.GetOrderByExpression("date-d"));
 
             return result.Select(video => new VideoVM
             {
@@ -223,12 +212,12 @@ namespace TenVids.Services
                 return null;
             }
 
-            var imageTypes = AcceptableContentTypes("image") ?? Array.Empty<string>();
-            var videoTypes = AcceptableContentTypes("video") ?? Array.Empty<string>();
+            var imageTypes = _helper.AcceptableContentTypes("image") ?? Array.Empty<string>();
+            var videoTypes =_helper.AcceptableContentTypes("video") ?? Array.Empty<string>();
 
             var videoVM = new VideoVM
             {
-                CategoryList = await GetCategoryListAsync(),
+                CategoryList = await _helper.GetCategoryListAsync(),
                 ImageContentTypes = imageTypes.Any() ? string.Join(",", imageTypes) : string.Empty,
                 VideoContentTypes = videoTypes.Any() ? string.Join(",", videoTypes) : string.Empty,
             };
@@ -250,10 +239,8 @@ namespace TenVids.Services
                   
                 }
             }
-
             return videoVM;
         }
-
         public async Task<bool> UserHasChannelAsync()
         {
            var userId = _httpContextAccessor.HttpContext.User.GetUserId();
@@ -266,7 +253,7 @@ namespace TenVids.Services
         }
         public async Task<WatchVideoVM> GetVideoToWatchAsync(int videoId)
         {
-            // Get video from repository with deep includes
+            
             var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                 x => x.Id == videoId,
                 includeProperties: "Channel.Subscribers");  
@@ -279,7 +266,6 @@ namespace TenVids.Services
                 return null; 
             }
 
-          
             var result = new WatchVideoVM
             {
                 Id = video.Id,
@@ -288,9 +274,8 @@ namespace TenVids.Services
                 CreatedAt = video.CreatedAt,
                 ChannelId = video.ChannelId,
                 ChannelName = video.Channel?.Name ?? string.Empty,  
-                IsSubscribed = video.Channel?.Subscribers?.Any(x => x.AppUserId == userId) ?? false,
 
-             
+                IsSubscribed = video.Channel?.Subscribers?.Any(x => x.AppUserId == userId) ?? false,
                 IsLiked = true,
                 IsDisliked = true,
 
@@ -303,7 +288,6 @@ namespace TenVids.Services
 
             return result;
         }
-
 
         public async Task<ErrorModel<VideoFileDto>> DownloadVideoFileAsync(int id)
         {
@@ -339,7 +323,21 @@ namespace TenVids.Services
                 return ErrorModel<VideoFileDto>.Failure("Error retrieving video file", 500);
             }
         }
+        public async Task<VideoFileDto?> GetVideoFileAsync(int id)
+        {
+            if (id <= 0) return null;
 
+            return await _unitOfWork.VideosRepository.GetQueryable()
+                .Where(v => v.Id == id)
+                .Select(v => new VideoFileDto
+                {
+                    Contents = v.VideoFile.Contents,
+                    ContentType = v.VideoFile.ContentType,
+                  
+                })
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+        }
         //public async Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
         //{
         //    var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
@@ -372,21 +370,6 @@ namespace TenVids.Services
 
         //    return ErrorModel<Videos>.Success(video, "Video updated successfully");
         //}
-        public async Task<VideoFileDto?> GetVideoFileAsync(int id)
-        {
-            if (id <= 0) return null;
-
-            return await _unitOfWork.VideosRepository.GetQueryable()
-                .Where(v => v.Id == id)
-                .Select(v => new VideoFileDto
-                {
-                    Contents = v.VideoFile.Contents,
-                    ContentType = v.VideoFile.ContentType,
-                  
-                })
-                .AsNoTracking()
-                .FirstOrDefaultAsync();
-        }
         public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
         {
             throw new NotImplementedException();
@@ -402,192 +385,7 @@ namespace TenVids.Services
             throw new NotImplementedException();
         }
 
-        #region Private Method
-        private async Task<PaginatedList<VideoForHomeDto>> GetVideos(HomeParameters parameters)
-        {
-             
-
-            if (parameters == null)
-            {
-                throw new ArgumentNullException(nameof(parameters));
-            }
-
-            parameters.PageNumber = Math.Max(1, parameters.PageNumber);
-            parameters.PageSize = Math.Clamp(parameters.PageSize, 1, 100); 
-
-            try
-            {
-               
-                var query = _unitOfWork.VideosRepository.GetQueryable()
-                 .Include(v => v.Category)  
-                .Include(v => v.Channel)   
-                 .AsQueryable();
-               
-                if (parameters.CategoryId > 0)
-                {
-                    query = query.Where(x => x.CategoryId == parameters.CategoryId);
-                }
-
-                if (!string.IsNullOrWhiteSpace(parameters.SearchBy))
-                {
-                    var searchTerm = parameters.SearchBy.Trim().ToLower();
-                    query = query.Where(x =>
-                        x.Title.ToLower().Contains(searchTerm) ||
-                        (x.Description != null && x.Description.ToLower().Contains(searchTerm))
-                    );
-                }
-
-                query = parameters.SortBy?.ToLower() switch
-                {
-                    
-                    "newest" => query.OrderByDescending(x => x.CreatedAt),
-                    "oldest" => query.OrderBy(x => x.CreatedAt),
-                    _ => query.OrderByDescending(x => x.CreatedAt) 
-                };
-
-                var resultQuery = query.Select(x => new VideoForHomeDto
-                {
-                    Id = x.Id,
-                    Title = x.Title,
-                    Description = x.Description,
-                    ThumbnailUrl = x.Thumbnail,
-                    CreatedAt = x.CreatedAt,
-                    Views = SD.GetRandomNumber(10000, 500000, x.Id),
-                    ChannelName = x.Channel.Name,
-                    ChannelId = x.ChannelId,
-                    CategoryId = x.CategoryId,
-              
-                });
-
-                return await PaginatedList<VideoForHomeDto>.CreateAsync(
-                    resultQuery.AsNoTracking(),
-                    parameters.PageNumber,
-                    parameters.PageSize);
-            }
-            catch (Exception ex)
-            {
-                throw new ApplicationException("Error retrieving videos", ex);
-            }
-        }
-
-        private Func<IQueryable<Videos>, IOrderedQueryable<Videos>> GetOrderByExpression(string sortBy)
-        {
-            return sortBy switch
-            {
-                "title-a" => q => q.OrderBy(x => x.Title),
-                "title-d" => q => q.OrderByDescending(x => x.Title),
-                "date-a" => q => q.OrderBy(x => x.CreatedAt),
-                "date-d" => q => q.OrderByDescending(x => x.CreatedAt),
-                "Category-a" => q => q.OrderBy(x => x.Category.Name),
-                "Category-d" => q => q.OrderByDescending(x => x.Category.Name),
-                _ => q => q.OrderByDescending(x => x.CreatedAt)
-            };
-        }
-        private async Task<byte[]> ProcessUploadedFiles(IFormFile file)
-        {
-            byte[] contents;
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            contents = memoryStream.ToArray();
-            return contents;
-
-        }
-        private async Task<IEnumerable<SelectListItem>> GetCategoryListAsync()
-        {
-            var categories = await _unitOfWork.CategoryRepository.GetAllAsync();
-
-            return categories.Select(c => new SelectListItem
-            {
-                Value = c.Id.ToString(),
-                Text = c.Name
-            });
-        }
-
-        private string[] AcceptableContentTypes(string type)
-        {
-            if (type.Equals("image"))
-            {
-                return _configuration.GetSection("FileUpload:ImageContentTypes").Get<string[]>();
-            }
-            else
-            {
-                return _configuration.GetSection("FileUpload:VideoContentTypes").Get<string[]>();
-            }
-        }
-
-        private bool IsAcceptableContentType(string type, string contentType)
-        {
-            var allowedContentTypes = AcceptableContentTypes(type);
-            foreach (var allowedContentType in allowedContentTypes)
-            {
-                if (contentType.ToLower().Equals(allowedContentType.ToLower()))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        private async Task<ErrorModel<Videos>> CreateNewVideos(
-           VideoVM model, int channelId, byte[] thumbnailBytes, byte[] videoBytes)
-        {
-            var newVideo = new Videos
-            {
-                Title = model.Title,
-                Description = model.Description,
-                CategoryId = model.CategoryId,
-                ChannelId = channelId,
-                Thumbnail = _picService.UploadPics(model.ImageUpload),
-                VideoFile = new VideoFiles
-                {
-                    ContentType = model.VideoUpload.ContentType,
-                    Contents=ProcessUploadedFiles(model.VideoUpload).GetAwaiter().GetResult(),
-                    Extension=SD.GetExtension(model.VideoUpload.ContentType),
-                },
-            };
-
-            _unitOfWork.VideosRepository.Add(newVideo);
-            await _unitOfWork.CompleteAsync();
-            return ErrorModel<Videos>.Success(newVideo, "Video created successfully");
-        }
-
-        private async Task<ErrorModel<Videos>> UpdateExistingVideo(
-            VideoVM model, byte[] thumbnailBytes, byte[] videoBytes)
-        {
-            var existingVideo = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
-            if (existingVideo == null)
-                return ErrorModel<Videos>.Failure("Video not found", 404);
-            existingVideo.Id=model.Id;
-            existingVideo.Title = model.Title;
-            existingVideo.Description = model.Description;
-            existingVideo.CategoryId = model.CategoryId;
-
-            if (model.ImageUpload != null)
-            {
-                existingVideo.Thumbnail = _picService.UploadPics(model.ImageUpload);
-            }
-            else
-            {
-                existingVideo.Thumbnail = model.ImageUrl;
-            }
-            if (model.VideoUpload != null)
-            {
-
-                existingVideo.VideoFile.ContentType = model.VideoUpload.ContentType;
-                existingVideo.VideoFile.Contents = videoBytes;
-            }
-
-            _unitOfWork.VideosRepository.UpdateAsync(existingVideo);
-            await _unitOfWork.CompleteAsync();
-            return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
-        }
-
        
-
-
-
-
-        #endregion
     }
 
 }

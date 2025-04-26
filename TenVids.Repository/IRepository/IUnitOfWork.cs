@@ -1,5 +1,4 @@
-﻿
-namespace TenVids.Repository.IRepository
+﻿namespace TenVids.Repository.IRepository
 {
     public interface IUnitOfWork: IDisposable
     {
@@ -7,8 +6,6 @@ namespace TenVids.Repository.IRepository
         ICategoryRepository CategoryRepository { get; }
         IVideosRepository VideosRepository { get; }
         IVideoFileRepository VideoFileRepository { get; }
-      
-
         Task <bool> CompleteAsync();
     }
 }

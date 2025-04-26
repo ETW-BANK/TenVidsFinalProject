@@ -31,14 +31,12 @@ namespace TenVids.Services
 
             return Task.FromResult(loginVM);
         }
-
         public async Task<bool> LoginAsync(LoginVM loginVM)
         {
             if (loginVM == null || string.IsNullOrEmpty(loginVM.UserName) || string.IsNullOrEmpty(loginVM.Password))
             {
                 return false; 
             }
-
            
             var user = await _userManager.FindByNameAsync(loginVM.UserName);
 
@@ -52,7 +50,6 @@ namespace TenVids.Services
                 return false; 
             }
 
-           
             var result = await _signInManager.PasswordSignInAsync(
                 user,
                 loginVM.Password,
@@ -68,12 +65,10 @@ namespace TenVids.Services
 
             return false; 
         }
-
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
         }
-
         public async Task Register(RegisterVM registerVM)
         {
            if(!registerVM.Password.Equals(registerVM.ConfirmPassword))

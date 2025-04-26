@@ -17,7 +17,6 @@ namespace TenVids.Services
             _unitOfWork = unitOfWork;
         }
 
-      
         public async Task DeleteCategoryAsync(Category category)
         {
           category = _unitOfWork.CategoryRepository.GetFirstOrDefaultAsync(c => c.Id == category.Id).Result;

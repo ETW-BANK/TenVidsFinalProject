@@ -1,5 +1,4 @@
-﻿
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using TenVids.Models;
 
 namespace TenVids.Repository.IRepository
@@ -18,9 +17,9 @@ namespace TenVids.Repository.IRepository
             Func<IQueryable<T>,IOrderedQueryable<T>> orderby = null);
         Task<int> CountAsync(Expression<Func<T, bool>> filter = null);
         IQueryable<T> GetQueryable(
-    Expression<Func<T, bool>> filter = null,
-    string includeProperties = null,
-    Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null);
+        Expression<Func<T, bool>> filter = null,
+        string includeProperties = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null);
 
 
 
