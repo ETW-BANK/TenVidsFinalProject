@@ -4,18 +4,129 @@
 <style>
     video {
         width: 100%;
-        border-radius: 20px;
-        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 12px;
         outline: none;
     }
 
-        video:hover {
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.9);
+    .video-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    .video-title {
+        font-size: 1.4rem;
+        font-weight: 500;
+        margin: 12px 0;
+    }
+
+    .video-stats {
+        display: flex;
+        align-items: center;
+        color: #606060;
+        font-size: 0.9rem;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+
+    .like-dislike-container {
+        display: flex;
+        align-items: center;
+        background: #f9f9f9;
+        border-radius: 18px;
+        overflow: hidden;
+        height: 36px;
+    }
+
+    .like-section, .dislike-section {
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        height: 100%;
+        cursor: pointer;
+        color: #606060;
+    }
+
+    .like-section {
+        border-right: 1px solid #e5e5e5;
+    }
+
+        .like-section.active {
+            background: rgba(6, 95, 212, 0.1);
+            color: #065fd4;
         }
 
-    .font-btn {
-        font-size: 1.2rem;
+    .dislike-section.active {
+        background: rgba(6, 95, 212, 0.1);
+        color: #065fd4;
+    }
+
+    .like-section i, .dislike-section i {
+        margin-right: 6px;
+        font-size: 1.1rem;
+    }
+
+    .action-button {
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        background: #f9f9f9;
+        border-radius: 18px;
+        cursor: pointer;
+        height: 36px;
+        color: #606060;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+        .action-button:hover {
+            background: #f0f0f0;
+        }
+
+        .action-button i {
+            margin-right: 6px;
+            font-size: 1.1rem;
+        }
+
+    .channel-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 12px;
+    }
+
+    .channel-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .channel-name {
+        font-weight: 500;
+        color: #030303;
+    }
+
+    .subscriber-count {
+        color: #606060;
+        font-size: 0.8rem;
+    }
+
+    .subscribe-btn {
+        transition: all 0.3s ease;
+        min-width: 100px; 
+    }
+
+    .btn-danger {
+        background-color: #dc3545; 
+    }
+
+    .btn-success {
+        background-color: #28a745; 
     }
 </style>
 
@@ -27,72 +138,101 @@
             <source src="/Video/GetVideoFile?videoId=@Model.Id" type="" />
             Your browser does not support the video tag.
         </video>
-        <div class="d-flex justify-content-between mt-2">
-            <section>
-                <span class="badge bg-warning font-btn" id="increase-views-btn">
-                    <i class="bi bi-eye"></i><span id="view-count" class="ms-2">@Model.ViewsCount.ToString("N0")</span>
-                </span>
-            </section>
-            <section class="d-flex align-content-center">
-                <button class="btn btn@(Model.IsLiked ? "" : "-outline")-dark font-btn me-1" id="likeBtn" onclick="likeDislike('likeBtn', 'like')">
-                    <i class="bi bi-hand-thumbs-up-fill"></i> <span class="ms-2">@SD.FormatView(Model.LikesCount)</span>
-                </button>
-                <button class="btn btn@(Model.IsDisliked ? "" : "-outline")-dark font-btn me-1" id="dislikeBtn" onclick="likeDislike('dislikeBtn', 'dislike')">
-                    <i class="bi bi-hand-thumbs-down-fill"></i> <span class="ms-2">@SD.FormatView(Model.DislikesCount)</span>
-                </button>
-                <form method="post">
-                    <button asp-action="DownloadVideo" asp-route-videoId="@Model.Id" type="submit" class="btn btn-outline-primary font-btn">Download</button>
-                </form>
-            </section>
-        </div>
-    </div>
-    <div class="col-lg-3">
-        <div class="card border-secondary mb-3">
-            <div class="card-header">
-                <p class="text-danger-emphasis h4">@Model.Title</p>
-                <p>@SD.TimeAgo(Model.CreatedAt)</p>
-                <div class="d-flex align-content-center justify-content-between">
-                    <div>
-                        <a asp-action="Member" asp-controller="channel" asp-route-id="@Model.ChannelId" class="text-primary text-decoration-none">@Model.ChannelName</a>
-                        <p class="text-muted small mb-0">@SD.FormatView(Model.SubscribersCount) subscribers</p>
-                    </div>
-                    <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-light text-dark" : "btn-danger") rounded-pill fw-bold" style="@(Model.IsSubscribed ? "border: 1px solid #ccc;" : "")">
-                        @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
-                    </button>
-                </div>
+
+        <h1 class="video-title">@Model.Title</h1>
+
+        <div class="video-actions">
+            <div class="video-stats">
+                <span id="view-count">@Model.ViewsCount.ToString("N0") views</span>
+                <span style="margin: 0 4px;">•</span>
+                <span>@SD.TimeAgo(Model.CreatedAt)</span>
             </div>
-            <div class="card-body">
-                <p class="card-text">
-                    @Model.Description  
-                </p>
-            </div> 
+
+            <div class="action-buttons">
+                <div class="like-dislike-container">
+                    <div class="like-section @(Model.IsLiked ? "active" : "")" id="likeBtn" onclick="likeDislike('likeBtn', 'like')">
+                        <i class="bi bi-hand-thumbs-up-fill"></i>
+                        <span>@SD.FormatView(Model.LikesCount)</span>
+                    </div>
+                    <div class="dislike-section @(Model.IsDisliked ? "active" : "")" id="dislikeBtn" onclick="likeDislike('dislikeBtn', 'dislike')">
+                        <i class="bi bi-hand-thumbs-down-fill"></i>
+                        <span>@SD.FormatView(Model.DislikesCount)</span>
+                    </div>
+                </div>
+
+                <button class="action-button">
+                    <i class="bi bi-share"></i>
+                    <span>Share</span>
+                </button>
+
+                <button class="action-button">
+                    <i class="bi bi-clipboard-plus"></i>
+                    <span>Save</span>
+                </button>
+
+                <form method="post">
+                    <button asp-action="DownloadVideo" asp-route-videoId="@Model.Id" type="submit" class="action-button">
+                        <i class="bi bi-download"></i>
+                        <span>Download</span>
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
+
+        <div class="channel-info">
+            <div class="channel-text">
+            <a asp-action="Channel" asp-controller="Member" class="text-danger text-decoration-none">@Model.ChannelName</a>
+                <span class="subscriber-count">@SD.FormatView(Model.SubscribersCount) subscribers</span>
+            </div>
+
+            <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
+                @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
+            </button>
+           
+        </div>
+
+        <div class="video-description mt-3">
+            <p>@Model.Description</p>
+        </div>
     </div>
 
-   @section Scripts {
+    <div class="col-lg-3">
+        <!-- Suggested videos or other sidebar content can go here -->
+    </div>
+</div>
+
+@section Scripts {
     <script>
-        $('#subscribeBtn').on('click', function () {
-            $.ajax({
-                url: "/Video/SubscribeChannel",
-                type: "PUT",
-                data: { channelId: '@Model.ChannelId' },
-                success: function (data) {
-                    if (data.title == "Unsubscribed") {
-                        $('#subscribeBtn').removeClass('btn-dark');
-                        $('#subscribeBtn').addClass('btn-outline-dark');
-                        $('#subscribeBtn').text('Subscribe');
-                        displayNotification(false, data.title, data.message, 'toastr');
-                    } else if (data.title == "Subscribed") {
-                        $('#subscribeBtn').removeClass('btn-outline-dark');
-                        $('#subscribeBtn').addClass('btn-dark');
-                        $('#subscribeBtn').text('Subscribed');
-                        displayNotification(true, data.title, data.message, 'toastr');
-                    } else {
-                        displayNotification(data.isSuccess, data.title, data.message, 'modal');
+        $(document).ready(function () {
+            $('#subscribeBtn').on('click', function (e) {
+                e.preventDefault();
+                var btn = $(this);
+
+                $.ajax({
+                    url: "/Video/SubscribeChannel",
+                    type: "PUT",
+                    data: { channelId: '@Model.ChannelId' },
+                    success: function (data) {
+                        if (data.title === "Unsubscribed") {
+                            btn.removeClass('btn-success');
+                            btn.addClass('btn-danger');
+                            btn.text('Subscribe');
+                            toastr.success(data.message);
+                        } else if (data.title === "Subscribed") {
+                            btn.removeClass('btn-danger');
+                            btn.addClass('btn-success');
+                            btn.text('Subscribed ✓');
+                            toastr.success(data.message);
+                        } else {
+                            toastr.error(data.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Subscription error:", error);
+                        toastr.error("Failed to update subscription");
                     }
-                }
-            })
+                });
+            });
         });
     </script>
 }

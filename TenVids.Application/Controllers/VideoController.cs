@@ -148,19 +148,41 @@ namespace TenVids.Application.Controllers
         public async Task<IActionResult> SubscribeChannel(int channelId)
         {
             var result = await _channelService.Subscribe(channelId);
+
             if (!result.IsSuccess)
             {
-                return Json(new ApiResponse(result.StatusCode, result.Message));    
+                return Json(new
+                {
+                    title = "Error",
+                    message = result.Message,
+                    isSuccess = false
+                });
             }
             else if (result.Data.Subscribers == null || !result.Data.Subscribers.Any())
-             {
-                    return Json(new ApiResponse(200, "Unsubscribed", "Unsubscribed"));
-             }
+            {
+                return Json(new
+                {
+                    title = "Unsubscribed",
+                    message = "You've unsubscribed from this channel",
+                    isSuccess = true
+                });
+            }
             else if (result.Data.Subscribers.Any(s => s.AppUserId == User.GetUserId() && s.ChannelId == channelId))
             {
-              return Json(new ApiResponse(200, "Subscribed", "Subscribed"));    
+                return Json(new
+                {
+                    title = "Subscribed",
+                    message = "You've subscribed to this channel",
+                    isSuccess = true
+                });
             }
-            return Json(new ApiResponse(400, message: "Channel not found"));
+
+            return Json(new
+            {
+                title = "Error",
+                message = "Channel not found",
+                isSuccess = false
+            });
         }
         #endregion
     }

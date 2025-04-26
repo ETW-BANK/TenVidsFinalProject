@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -11,7 +10,6 @@ using TenVids.Utilities;
 
 namespace TenVids.Application.Controllers
 {
-   
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -23,7 +21,6 @@ namespace TenVids.Application.Controllers
             _homeService = homeService;
             _videosService = videosService;
         }
-
         public async Task<IActionResult> Index(string page)
         {
             try
@@ -41,8 +38,6 @@ namespace TenVids.Application.Controllers
                 return View("Error");
             }
         }
-
-
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
