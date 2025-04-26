@@ -259,7 +259,7 @@ namespace TenVids.Services
                 includeProperties: "Channel.Subscribers,Likes");  
 
             // Extract the current logged-in user's ID
-            var userId = _httpContextAccessor?.HttpContext?.User.GetUserId();
+            var userId = _httpContextAccessor.HttpContext.User.GetUserId();
 
             if (video == null)
             {
@@ -275,15 +275,15 @@ namespace TenVids.Services
                 ChannelId = video.ChannelId,
                 ChannelName = video.Channel?.Name ?? string.Empty,  
 
-                IsSubscribed = video.Channel?.Subscribers?.Any(x => x.AppUserId == userId) ?? false,
-                IsLiked = video.Likes?.Any(x => x.AppUserId == userId) ?? true,
-                IsDisliked = video.Likes?.Any(x => x.AppUserId == userId) ?? false,
+                IsSubscribed = video.Channel.Subscribers.Any(x => x.AppUserId == userId),
+                IsLiked = (video.Likes.Any(x => x.AppUserId == userId && x.IsLike==true)),
+                IsDisliked = (video.Likes.Any(x => x.AppUserId == userId && x.IsLike == false)),
 
 
                 SubscribersCount = SD.GetRandomNumber(1, 5000, videoId),
                 ViewsCount = SD.GetRandomNumber(10000, 500000, videoId),
-                LikesCount = video.Likes?.Count(x => x.IsLike) ?? 0,
-                DislikesCount = video.Likes?.Count(x => !x.IsLike) ?? 0
+                LikesCount = (video.Likes.Where(x=>x.IsLike==true).Count()),
+                DislikesCount = (video.Likes.Where(x => x.IsLike == false).Count()),
             };
 
             return result;
@@ -293,91 +293,108 @@ namespace TenVids.Services
         {
             try
             {
-                var userId = _httpContextAccessor?.HttpContext?.User.GetUserId();
-
+                var userId = _httpContextAccessor.HttpContext?.User.GetUserId();
                 if (string.IsNullOrEmpty(userId))
                 {
                     return ErrorModel<string>.Failure("User not authenticated", 401);
                 }
 
-                var video = await _unitOfWork.VideosRepository
-                    .GetFirstOrDefaultAsync(x => x.Id == videoId, "Likes");
+                var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
+                    x => x.Id == videoId,
+                    includeProperties: "Likes",
+                    tracked: true); 
 
                 if (video == null)
                 {
                     return ErrorModel<string>.Failure("Video not found", 404);
                 }
 
-                // Initialize Likes collection if null
+                // Initialize collection if null
                 video.Likes ??= new List<Likes>();
 
-                var existingLike = video.Likes
-                    .FirstOrDefault(x => x.AppUserId == userId && x.VideoId == videoId);
+                var existingLike = video.Likes.FirstOrDefault(x => x.AppUserId == userId);
 
-                string clientCommand = "";
-                bool resultState = false;
+                string command = "";
 
                 if (action == "like")
                 {
                     if (existingLike == null)
                     {
                         // Add new like
-                        video.Likes.Add(new Likes(userId, videoId) { IsLike = true });
-                        clientCommand = "addLike";
-                        resultState = true;
+                        var newLike = new Likes
+                        {
+                            AppUserId = userId,
+                            VideoId = videoId,
+                            IsLike = true
+                        };
+                        video.Likes.Add(newLike);
+                        command = "addLike";
                     }
-                    else if (existingLike.IsLike == false)
+                    else if (!existingLike.IsLike)
                     {
                         // Change dislike to like
                         existingLike.IsLike = true;
-                        clientCommand = "removeDislike-addLike";
-                        resultState = true;
+                        command = "removeDislike-addLike";
                     }
                     else
                     {
                         // Remove existing like
                         video.Likes.Remove(existingLike);
-                        clientCommand = "removeLike";
-                        resultState = false;
+                        command = "removeLike";
                     }
                 }
                 else if (action == "dislike")
                 {
                     if (existingLike == null)
                     {
-                        // Add new dislike
-                        video.Likes.Add(new Likes(userId, videoId) { IsLike = false });
-                        clientCommand = "addDislike";
-                        resultState = true;
+                        // Add new dislike is liked false
+                        var newDislike = new Likes
+                        {
+                            AppUserId = userId,
+                            VideoId = videoId,
+                            IsLike = false
+                        };
+                        video.Likes.Add(newDislike);
+                        command = "addDislike";
                     }
-                    else if (existingLike.IsLike == true)
+                    else if (existingLike.IsLike)
                     {
                         // Change like to dislike
                         existingLike.IsLike = false;
-                        clientCommand = "removeLike-addDislike";
-                        resultState = true;
+                        command = "removeLike-addDislike";
                     }
                     else
                     {
                         // Remove existing dislike
                         video.Likes.Remove(existingLike);
-                        clientCommand = "removeDislike";
-                        resultState = false;
+                        command = "removeDislike";
                     }
                 }
                 else
                 {
-                    return ErrorModel<string>.Failure("Invalid action specified", 400);
+                    return ErrorModel<string>.Failure("Invalid action", 400);
                 }
 
-                await _unitOfWork.CompleteAsync();
-                return ErrorModel<string>.Success(clientCommand, resultState ? "Operation successful" : "Operation successful");
+             
+                _unitOfWork.VideosRepository.Update(video);
+
+               
+                bool changesSaved = await _unitOfWork.CompleteAsync();
+
+                if (changesSaved)
+                {
+                    
+                    return ErrorModel<string>.Success(command);
+                }
+                else
+                {
+                    return ErrorModel<string>.Failure("No changes were saved", 500);
+                }
             }
             catch (Exception ex)
             {
-                // Log the exception
-             
-                return ErrorModel<string>.Failure("An error occurred while processing your request", 500);
+              
+                return ErrorModel<string>.Failure("Server Error", 500);
             }
         }
 

@@ -7,6 +7,7 @@ namespace TenVids.Repository.IRepository
     {
         void Add(T entity);
         void Update(T entity,T destination);
+        void Update(T entity);
         void UpdateAsync(T entity);
         void Remove(T item);
         void RemoveRange(IEnumerable<T> items);

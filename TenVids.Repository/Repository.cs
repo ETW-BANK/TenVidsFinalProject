@@ -27,10 +27,13 @@ namespace TenVids.Repository
 
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> filter)
         {
-         IQueryable<T> query = _dbSet;
-            query.Where(filter);    
+            IQueryable<T> query = _dbSet;
+
+            query = query.Where(filter); 
+
             return await query.AnyAsync();
         }
+
 
         public async Task<int> CountAsync(Expression<Func<T, bool>> filter = null)
         {
@@ -120,6 +123,10 @@ namespace TenVids.Repository
         {
             _context.Entry(entity).CurrentValues.SetValues(destination);
         }
+        public void Update(T entity)
+        {
+            _context.Update(entity);
+        }
         public void UpdateAsync(T entity)
         {
             _context.Update(entity);
@@ -129,7 +136,9 @@ namespace TenVids.Repository
         {
             foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {
-                query = query.Include(includeProp.Trim());
+                var property = includeProp.Trim();
+
+                query = query.Include(property);
             }
             return query;
         }

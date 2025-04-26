@@ -11,6 +11,7 @@ namespace TenVids.Models
         {
             AppUserId = appUserId;
             VideoId = videoId;
+          
         }
 
         public bool IsLike { get; set; } 

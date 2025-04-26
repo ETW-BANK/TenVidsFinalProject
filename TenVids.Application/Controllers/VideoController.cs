@@ -187,22 +187,30 @@ namespace TenVids.Application.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> LikeVideo(int videoId, string action, bool like)
+        public async Task<IActionResult> LikeVideo(int videoId, string action,bool like)
         {
-            var result = await _videosService.LikeVideo(videoId, action, like);
-            bool? isLiked = null;
-            if (result.IsSuccess)
+            var result = await _videosService.LikeVideo(videoId, action,like);
+
+            if (result.StatusCode == 200)
             {
-               isLiked = false;
+                return Ok(new
+                {
+                    success = true,
+                    command = result.Data, // The clientCommand ("addLike", "removeLike", etc.)
+                    message = result.Message ?? "Action completed successfully"
+                });
             }
-            return Json(new
+            else
             {
-                success = result.IsSuccess,
-                command = result.IsSuccess ? result.Data : null,
-                isLiked,
-                message = result.Message
-            });
+                return StatusCode(result.StatusCode, new
+                {
+                    success = false,
+                    message = result.Message,
+                    errors = result.Errors
+                });
+            }
         }
+
         #endregion
     }
 }
