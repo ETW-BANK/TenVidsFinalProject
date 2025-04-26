@@ -27,7 +27,7 @@ namespace TenVids.Services.IServices
         Task<VideoFileDto?> GetVideoFileAsync(int id);
         Task<ErrorModel<VideoFileDto>> DownloadVideoFileAsync(int id);
 
-
+        Task<ErrorModel<string>> LikeVideo(int videoId, string action, bool like);
 
     }
 }

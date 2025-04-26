@@ -256,7 +256,7 @@ namespace TenVids.Services
             
             var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                 x => x.Id == videoId,
-                includeProperties: "Channel.Subscribers");  
+                includeProperties: "Channel.Subscribers,Likes");  
 
             // Extract the current logged-in user's ID
             var userId = _httpContextAccessor?.HttpContext?.User.GetUserId();
@@ -276,17 +276,109 @@ namespace TenVids.Services
                 ChannelName = video.Channel?.Name ?? string.Empty,  
 
                 IsSubscribed = video.Channel?.Subscribers?.Any(x => x.AppUserId == userId) ?? false,
-                IsLiked = true,
-                IsDisliked = true,
+                IsLiked = video.Likes?.Any(x => x.AppUserId == userId) ?? true,
+                IsDisliked = video.Likes?.Any(x => x.AppUserId == userId) ?? false,
 
-            
+
                 SubscribersCount = SD.GetRandomNumber(1, 5000, videoId),
                 ViewsCount = SD.GetRandomNumber(10000, 500000, videoId),
-                LikesCount = SD.GetRandomNumber(1, 100, videoId),
-                DislikesCount = SD.GetRandomNumber(1, 100, videoId)
+                LikesCount = video.Likes?.Count(x => x.IsLike) ?? 0,
+                DislikesCount = video.Likes?.Count(x => !x.IsLike) ?? 0
             };
 
             return result;
+        }
+
+        public async Task<ErrorModel<string>> LikeVideo(int videoId, string action, bool like)
+        {
+            try
+            {
+                var userId = _httpContextAccessor?.HttpContext?.User.GetUserId();
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    return ErrorModel<string>.Failure("User not authenticated", 401);
+                }
+
+                var video = await _unitOfWork.VideosRepository
+                    .GetFirstOrDefaultAsync(x => x.Id == videoId, "Likes");
+
+                if (video == null)
+                {
+                    return ErrorModel<string>.Failure("Video not found", 404);
+                }
+
+                // Initialize Likes collection if null
+                video.Likes ??= new List<Likes>();
+
+                var existingLike = video.Likes
+                    .FirstOrDefault(x => x.AppUserId == userId && x.VideoId == videoId);
+
+                string clientCommand = "";
+                bool resultState = false;
+
+                if (action == "like")
+                {
+                    if (existingLike == null)
+                    {
+                        // Add new like
+                        video.Likes.Add(new Likes(userId, videoId) { IsLike = true });
+                        clientCommand = "addLike";
+                        resultState = true;
+                    }
+                    else if (existingLike.IsLike == false)
+                    {
+                        // Change dislike to like
+                        existingLike.IsLike = true;
+                        clientCommand = "removeDislike-addLike";
+                        resultState = true;
+                    }
+                    else
+                    {
+                        // Remove existing like
+                        video.Likes.Remove(existingLike);
+                        clientCommand = "removeLike";
+                        resultState = false;
+                    }
+                }
+                else if (action == "dislike")
+                {
+                    if (existingLike == null)
+                    {
+                        // Add new dislike
+                        video.Likes.Add(new Likes(userId, videoId) { IsLike = false });
+                        clientCommand = "addDislike";
+                        resultState = true;
+                    }
+                    else if (existingLike.IsLike == true)
+                    {
+                        // Change like to dislike
+                        existingLike.IsLike = false;
+                        clientCommand = "removeLike-addDislike";
+                        resultState = true;
+                    }
+                    else
+                    {
+                        // Remove existing dislike
+                        video.Likes.Remove(existingLike);
+                        clientCommand = "removeDislike";
+                        resultState = false;
+                    }
+                }
+                else
+                {
+                    return ErrorModel<string>.Failure("Invalid action specified", 400);
+                }
+
+                await _unitOfWork.CompleteAsync();
+                return ErrorModel<string>.Success(clientCommand, resultState ? "Operation successful" : "Operation successful");
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+             
+                return ErrorModel<string>.Failure("An error occurred while processing your request", 500);
+            }
         }
 
         public async Task<ErrorModel<VideoFileDto>> DownloadVideoFileAsync(int id)

@@ -9,6 +9,7 @@ using TenVids.Utilities;
 using TenVids.ViewModels;
 using System.Linq;
 using TenVids.Services.Extensions;
+using TenVids.Services;
 
 namespace TenVids.Application.Controllers
 {
@@ -182,6 +183,24 @@ namespace TenVids.Application.Controllers
                 title = "Error",
                 message = "Channel not found",
                 isSuccess = false
+            });
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> LikeVideo(int videoId, string action, bool like)
+        {
+            var result = await _videosService.LikeVideo(videoId, action, like);
+            bool? isLiked = null;
+            if (result.IsSuccess)
+            {
+               isLiked = false;
+            }
+            return Json(new
+            {
+                success = result.IsSuccess,
+                command = result.IsSuccess ? result.Data : null,
+                isLiked,
+                message = result.Message
             });
         }
         #endregion

@@ -234,5 +234,50 @@
                 });
             });
         });
+        function likeDislike(id, action) {
+            const button = $(`#${id}`);
+            const isActive = button.hasClass('active');
+
+            $.ajax({
+                url: "/Video/LikeVideo",
+                type: "PUT",
+                data: {
+                    videoId: '@Model.Id',
+                    action: action,
+                    like: !isActive // true when activating, false when deactivating
+                },
+                success: function (data) {
+                    if (data.success) {
+                        const countSpan = button.find('span:last');
+                        let currentCount = parseInt(countSpan.text().replace(/[^0-9]/g, '')) || 0;
+
+                        // Toggle active class
+                        button.toggleClass('active');
+
+                        // Update count based on new state
+                        if (button.hasClass('active')) {
+                            countSpan.text(currentCount + 1);
+                        } else {
+                            countSpan.text(currentCount - 1);
+                        }
+
+                        // Handle mutual exclusion
+                        if (action === 'like') {
+                            $('#dislikeBtn').removeClass('active');
+                        } else {
+                            $('#likeBtn').removeClass('active');
+                        }
+
+                        toastr.success(data.message);
+                    } else {
+                        toastr.error(data.message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Like/Dislike error:", error);
+                    toastr.error("Failed to update reaction");
+                }
+            });
+        }
     </script>
 }
