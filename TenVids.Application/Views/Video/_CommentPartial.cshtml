@@ -12,6 +12,19 @@
         background-color: #6c757d; 
         color: white; 
     }
+
+    #sectionCommentBtns {
+        display: none !important; /* Force hide regardless of other styles */
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    /* Show buttons when needed */
+    #textComment:not(:placeholder-shown) + div #sectionCommentBtns,
+    #textComment:focus + div #sectionCommentBtns {
+        display: flex !important;
+        opacity: 1;
+    }
 </style>
 
 <div class="container my-4">
@@ -23,8 +36,10 @@
         </div>
         <div class="col-9">
             <form method="post" asp-action="CreateComment" asp-controller="Video">
-                <input type="text" asp-for="PostComment.VideoId" hidden />
-                <textarea id="textComment" asp-for="PostComment.Content" class="form-control mb-2" rows="2" placeholder="Add a comment..."></textarea>
+                <input type="hidden" asp-for="PostComment.VideoId" />
+                <textarea id="textComment" asp-for="PostComment.Content"
+                          class="form-control mb-2" rows="2"
+                          placeholder="Add a comment..."></textarea>
                 <div class="d-flex justify-content-end" style="height: 30px;">
                     <section id="sectionCommentBtns">
                         <button id="btnCancel" type="button" class="btn btn-sm btn-light me-2">Cancel</button>
@@ -32,8 +47,6 @@
                     </section>
                 </div>
             </form>
-
-
         </div>
     </div>
 </div>

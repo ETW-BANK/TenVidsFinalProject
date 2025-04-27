@@ -219,7 +219,7 @@ namespace TenVids.Application.Controllers
                 return Ok(new
                 {
                     success = true,
-                    command = result.Data, // The clientCommand ("addLike", "removeLike", etc.)
+                    command = result.Data, 
                     message = result.Message ?? "Action completed successfully"
                 });
             }
