@@ -15,10 +15,7 @@
         public int DislikesCount { get; set; }
         public int ViewsCount { get; set; }
         public int SubscribersCount { get; set; }   
-        public int Views { get; set; }
-        public DateTime UploadDate { get; set; }
-        public List<string> Tags { get; set; } = [];
-        //public List<CommentVM> Comments { get; set; } = new List<CommentVM>();
-
+        public CommentsVM CommentVM { get; set; } = new();
+    
     }
 }

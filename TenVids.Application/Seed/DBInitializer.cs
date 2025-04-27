@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using TenVids.Data.Access.Data;
 using TenVids.Models;
@@ -15,12 +16,10 @@ namespace TenVids.Seed
     public static class DBInitializer
     {
         public static async Task InitializeAsync(
-            TenVidsApplicationContext context,
-            UserManager<ApplicationUser> userManager,
-            RoleManager<AppRole> roleManager,
-            IPicService pictureService)
-
-
+     TenVidsApplicationContext context,
+     UserManager<ApplicationUser> userManager,
+     RoleManager<AppRole> roleManager,
+     IPicService pictureService)
         {
             if (context.Database.GetPendingMigrations().Count() > 0)
             {
@@ -37,7 +36,6 @@ namespace TenVids.Seed
 
             if (!userManager.Users.Any())
             {
-
                 var admin = new ApplicationUser
                 {
                     UserName = "admin",
@@ -47,6 +45,9 @@ namespace TenVids.Seed
 
                 await userManager.CreateAsync(admin, "@Admin12345");
                 await userManager.AddToRolesAsync(admin, new[] { SD.AdminRole, SD.UserRole, SD.ModeratorRole });
+
+                // Add GivenName Claim to User
+                await userManager.AddClaimAsync(admin, new Claim(ClaimTypes.GivenName, "Admin"));
 
                 var user = new ApplicationUser
                 {
@@ -58,15 +59,21 @@ namespace TenVids.Seed
                 await userManager.CreateAsync(user, "@User12345");
                 await userManager.AddToRoleAsync(user, SD.UserRole);
 
+                // Add GivenName Claim to User
+                await userManager.AddClaimAsync(user, new Claim(ClaimTypes.GivenName, "User"));
+
                 var tensae = new ApplicationUser
                 {
                     UserName = "tensae",
                     Email = "tensae@tenvids.com",
-                    Name = "tensae",
+                    Name = "Tensae",
                 };
 
                 await userManager.CreateAsync(tensae, "@Ten12345");
                 await userManager.AddToRoleAsync(tensae, SD.UserRole);
+
+                // Add GivenName Claim to User
+                await userManager.AddClaimAsync(tensae, new Claim(ClaimTypes.GivenName, "Tensae"));
 
                 var tensaeschannel = new Channel
                 {
@@ -81,11 +88,14 @@ namespace TenVids.Seed
                 {
                     UserName = "Dino",
                     Email = "dino@tenvids.com",
-                    Name = "dino",
+                    Name = "Dino",
                 };
 
                 await userManager.CreateAsync(dino, "@Dino12345");
                 await userManager.AddToRoleAsync(dino, SD.UserRole);
+
+                // Add GivenName Claim to User
+                await userManager.AddClaimAsync(dino, new Claim(ClaimTypes.GivenName, "Dino"));
 
                 var dinoschannel = new Channel
                 {
@@ -95,6 +105,7 @@ namespace TenVids.Seed
                 };
 
                 await context.Channels.AddAsync(dinoschannel);
+
 
                 var moderator = new ApplicationUser
                 {

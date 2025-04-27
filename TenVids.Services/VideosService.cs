@@ -265,7 +265,13 @@ namespace TenVids.Services
             {
                 return null; 
             }
-
+            var availableComments = video.Comments?.Select(c => new AvailableCommentsVM
+            {
+                Content = c.Content,
+                FormName = c.AppUser?.UserName ?? "Unknown",
+                FormChannelId = c.AppUser?.Channel?.Id ?? 0,
+                PostedAt = c.PostedAt
+            }).ToList();
             var result = new WatchVideoVM
             {
                 Id = video.Id,
@@ -280,10 +286,21 @@ namespace TenVids.Services
                 IsDisliked = (video.Likes.Any(x => x.AppUserId == userId && x.IsLike == false)),
 
 
-                SubscribersCount = SD.GetRandomNumber(1, 5000, videoId),
+                SubscribersCount = video.Channel.Subscribers.Count(),
                 ViewsCount = SD.GetRandomNumber(10000, 500000, videoId),
                 LikesCount = (video.Likes.Where(x=>x.IsLike==true).Count()),
                 DislikesCount = (video.Likes.Where(x => x.IsLike == false).Count()),
+                CommentVM = new CommentsVM
+                {
+                    PostComment = new CommentPostVM
+                    {
+                        VideoId = video.Id,  
+                        Content = string.Empty  
+                    },
+                    AvailableComments = availableComments ?? new List<AvailableCommentsVM>()
+                }
+
+
             };
 
             return result;

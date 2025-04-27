@@ -9,7 +9,7 @@ using TenVids.Utilities;
 using TenVids.ViewModels;
 using System.Linq;
 using TenVids.Services.Extensions;
-using TenVids.Services;
+
 
 namespace TenVids.Application.Controllers
 {
@@ -18,11 +18,12 @@ namespace TenVids.Application.Controllers
     {
         private readonly IVideosService _videosService;
         private readonly IChannelService _channelService;
-        public VideoController(IVideosService videosService,IChannelService channelService)
+        private readonly ICommentService _commentService;
+        public VideoController(IVideosService videosService,IChannelService channelService, ICommentService commentService)
         {
             _videosService = videosService;
             _channelService = channelService;
-
+            _commentService = commentService;
         }
         [HttpGet]
         public async Task<IActionResult> Upsert(int id)
@@ -119,6 +120,28 @@ namespace TenVids.Application.Controllers
 
             return File(result.Data.Contents,result.Data.ContentType,result.Data.FileName);
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateComment(CommentsVM comments)
+        {
+            
+            var result = await _commentService.CreateCommentsAsync(comments);
+
+            if (!result.IsSuccess)
+            {
+                TempData["error"] = result.Message;
+            }
+            else
+            {
+                TempData["success"] = result.Message;
+            }
+
+            return RedirectToAction("WatchVideos", new { id = comments.PostComment.VideoId });
+        }
+
+
+
+
+
         #region API CALLS
         [HttpGet]
         public async Task<IActionResult>GetVideosForChannelGrid(BaseParams parameters)

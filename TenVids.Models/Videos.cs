@@ -20,7 +20,7 @@ namespace TenVids.Models
         [ForeignKey("ChannelId")]
         public Channel Channel { get; set; }   
         public  VideoFiles? VideoFile { get; set; }
-        public ICollection<Comment>? Comments { get; set; } 
+        public ICollection<Comment> Comments { get; set; } 
         public ICollection<Likes>? Likes { get; set; }    
         public ICollection<VideoViews>? VideoViewers { get; set; }
 

@@ -6,6 +6,7 @@ namespace TenVids.Models
     {
         [Required]
         public string Name { get; set; }
+        public string? ProfileImageUrl { get; set; }
         public string Description { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public string AppUserId { get; set;} 

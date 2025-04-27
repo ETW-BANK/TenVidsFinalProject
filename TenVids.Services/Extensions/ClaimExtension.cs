@@ -17,8 +17,20 @@ namespace TenVids.Services.Extensions
 
         public static string GetName(this ClaimsPrincipal claimsPrincipal)
         {
-            return claimsPrincipal.FindFirst(ClaimTypes.GivenName)?.Value ?? string.Empty;
+            var givenName = claimsPrincipal.FindFirst(ClaimTypes.GivenName)?.Value;
+
+            if (string.IsNullOrEmpty(givenName))
+            {
+                
+                Console.WriteLine("GivenName is not available. Falling back to Identity.Name.");
+
+                givenName = claimsPrincipal.Identity?.Name ?? string.Empty;
+            }
+
+            return givenName ?? string.Empty;
         }
+
+
 
         public static string? GetUserId(this ClaimsPrincipal claimsPrincipal)
         {

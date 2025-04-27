@@ -1,0 +1,39 @@
+﻿@using TenVids.Services.Extensions
+@using TenVids.Utilities
+@model CommentsVM
+
+<style>
+    .comment-from {
+        width: 40px;
+        height: 40px;
+        font-size: 18px; 
+        line-height: 40px; 
+        text-align: center; 
+        background-color: #6c757d; 
+        color: white; 
+    }
+</style>
+
+<div class="container my-4">
+    <h2 class="mb-3">13 Comments</h2>
+    <div class="row mb-4">
+        <div class="col-3 user-avatar rounded-circle d-flex align-items-center justify-content-center comment-from">
+            @User.GetName().Substring(0, 2).ToUpper()
+           
+        </div>
+        <div class="col-9">
+            <form method="post" asp-action="CreateComment" asp-controller="Video">
+                <input type="text" asp-for="PostComment.VideoId" hidden />
+                <textarea id="textComment" asp-for="PostComment.Content" class="form-control mb-2" rows="2" placeholder="Add a comment..."></textarea>
+                <div class="d-flex justify-content-end" style="height: 30px;">
+                    <section id="sectionCommentBtns">
+                        <button id="btnCancel" type="button" class="btn btn-sm btn-light me-2">Cancel</button>
+                        <button id="btnComment" type="submit" class="btn btn-sm btn-primary">Comment</button>
+                    </section>
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+</div>

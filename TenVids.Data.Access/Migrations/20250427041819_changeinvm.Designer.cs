@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TenVids.Data.Access.Data;
 
@@ -11,9 +12,11 @@ using TenVids.Data.Access.Data;
 namespace TenVids.Data.Access.Migrations
 {
     [DbContext(typeof(TenVidsApplicationContext))]
-    partial class TenVidsApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250427041819_changeinvm")]
+    partial class changeinvm
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

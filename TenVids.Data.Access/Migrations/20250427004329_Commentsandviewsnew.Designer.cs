@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TenVids.Data.Access.Data;
 
@@ -11,9 +12,11 @@ using TenVids.Data.Access.Data;
 namespace TenVids.Data.Access.Migrations
 {
     [DbContext(typeof(TenVidsApplicationContext))]
-    partial class TenVidsApplicationContextModelSnapshot : ModelSnapshot
+    [Migration("20250427004329_Commentsandviewsnew")]
+    partial class Commentsandviewsnew
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -294,7 +297,7 @@ namespace TenVids.Data.Access.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("PostedAt")
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("VideoId")

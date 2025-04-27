@@ -35,6 +35,7 @@ namespace TenVids.Service.Extensions
             services.AddScoped<IVideosService, VideosService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IChannelService, ChannelService>();
+            services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<IPicService,PicService>();
             services.AddScoped<IHelper, Helper>();
             services.AddScoped<IHomeService,HomeService>();

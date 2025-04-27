@@ -9,7 +9,8 @@ namespace TenVids.Data.Access.Data
         public DbSet<Channel> Channels { get; set; }
         public DbSet<Videos> Videos { get; set; }
         public DbSet<Category> Categories { get; set; }
-
+        public DbSet<VideoViews> VideoViews { get; set; }
+        public DbSet<Comment> Comment { get; set; }
         public TenVidsApplicationContext(DbContextOptions<TenVidsApplicationContext> option): base(option)    
         {
             
@@ -19,7 +20,7 @@ namespace TenVids.Data.Access.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.Entity<Comment>()
-         .HasKey(c => new { c.AppUserId, c.VideoId }); 
+         .HasKey(c => new { c.Id }); 
 
             modelBuilder.Entity<Comment>()
                 .HasOne(c => c.AppUser)
@@ -64,7 +65,7 @@ namespace TenVids.Data.Access.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<VideoViews>()
-                .HasKey(v => new { v.AppUserId, v.VideoId });
+                .HasKey(v => new { v.Id});
             modelBuilder.Entity<VideoViews>()
                 .HasOne(v => v.AppUser)
                 .WithMany(u => u.VideoViews)
@@ -76,6 +77,8 @@ namespace TenVids.Data.Access.Data
                 .WithMany(v => v.VideoViewers)
                 .HasForeignKey(v => v.VideoId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+       
 
         }
 
