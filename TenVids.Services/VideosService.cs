@@ -256,7 +256,7 @@ namespace TenVids.Services
             
             var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                 x => x.Id == videoId,
-                includeProperties: "Channel.Subscribers,Likes");  
+                includeProperties: "Channel.Subscribers,Likes,Comments.AppUser");  
 
             // Extract the current logged-in user's ID
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
@@ -297,7 +297,13 @@ namespace TenVids.Services
                         VideoId = video.Id,  
                         Content = string.Empty  
                     },
-                    AvailableComments = availableComments ?? new List<AvailableCommentsVM>()
+                    AvailableComments = video.Comments?.Select(c => new AvailableCommentsVM
+                    {
+                        Content = c.Content,
+                        FormName = c.AppUser?.UserName ?? "Unknown",
+                        FormChannelId = _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == c.AppUserId).Result.Id,
+                        PostedAt = c.PostedAt
+                    }).ToList()
                 }
 
 
