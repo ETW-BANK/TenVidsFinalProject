@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using TenVids.Application.Models;
-using TenVids.Data.Access.Data;
 using TenVids.Models.Pagination;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
