@@ -71,9 +71,11 @@ namespace TenVids.Application.Controllers
             TempData["success"] = result.Message;
              return RedirectToAction("Index", "Channel");
         }
+        [AllowAnonymous]
         public async Task<IActionResult> WatchVideos(int id)
         {
             var result=await _videosService.GetVideoToWatchAsync(id);
+
             if (result == null)
             {
                 TempData["error"] = "Video not found";
@@ -82,6 +84,8 @@ namespace TenVids.Application.Controllers
 
             return View(result);
         }
+
+       [AllowAnonymous]
         public async Task<IActionResult> GetVideoFile(int? videoId)
         {
             try
@@ -121,6 +125,8 @@ namespace TenVids.Application.Controllers
             return File(result.Data.Contents,result.Data.ContentType,result.Data.FileName);
         }
         [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateComment(CommentsVM comments)
         {
             
@@ -169,10 +175,13 @@ namespace TenVids.Application.Controllers
             }
         }
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> SubscribeChannel(int channelId)
         {
+           
             var result = await _channelService.Subscribe(channelId);
 
+        
             if (!result.IsSuccess)
             {
                 return Json(new

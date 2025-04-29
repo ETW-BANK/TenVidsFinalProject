@@ -22,4 +22,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TenVids.Models\TenVids.Models.csproj" />
+  </ItemGroup>
+
 </Project>

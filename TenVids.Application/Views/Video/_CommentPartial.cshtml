@@ -14,7 +14,7 @@
     }
 
     #sectionCommentBtns {
-        display: none !important; 
+        display: none !important;
         opacity: 0;
         transition: opacity 0.2s ease;
     }
@@ -28,58 +28,83 @@
 </style>
 
 <div class="container my-4">
-    <h2 class="mb-3 text-dark">@SD.FormatView(Model.AvailableComments.Count())@(Model.AvailableComments.Count()>1?"Comments":"Comment")</h2>
+    <h2 class="mb-3 text-dark">@SD.FormatView(Model.AvailableComments.Count())@(Model.AvailableComments.Count() > 1 ? "Comments" : "Comment")</h2>
     <div class="row mb-4">
         <div class="col-3 user-avatar rounded-circle d-flex align-items-center justify-content-center comment-from">
-            @User.GetName().Substring(0, 2).ToUpper()
+            @{
+                var userName = User.GetName() ?? "";
+                var userInitials = userName.Length >= 2
+                ? userName.Substring(0, 2).ToUpper()
+                : userName.ToUpper();
+            }
+            @userInitials
         </div>
         <div class="col-9">
-            <form method="post" asp-action="CreateComment" asp-controller="Video">
-                <input type="hidden" asp-for="PostComment.VideoId" />
-                <textarea id="textComment" asp-for="PostComment.Content"
-                          class="form-control mb-2" rows="2"
-                          placeholder="Add a comment..."></textarea>
-                <div class="d-flex justify-content-end" style="height: 30px;">
-                    <section id="sectionCommentBtns">
-                        <button id="btnCancel" type="button" class="btn btn-sm btn-light me-2">Cancel</button>
-                        <button id="btnComment" type="submit" class="btn btn-sm btn-primary">Comment</button>
-                    </section>
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form method="post" asp-action="CreateComment" asp-controller="Video">
+                    <input type="hidden" asp-for="PostComment.VideoId" />
+                    <textarea id="textComment" asp-for="PostComment.Content"
+                              class="form-control mb-2" rows="2"
+                              placeholder="Add a comment..."></textarea>
+                    <div class="d-flex justify-content-end" style="height: 30px;">
+                        <section id="sectionCommentBtns">
+                            <button id="btnCancel" type="button" class="btn btn-sm btn-light me-2">Cancel</button>
+                            <button id="btnComment" type="submit" class="btn btn-sm btn-primary">Comment</button>
+                        </section>
+                    </div>
+                </form>
+            }
+            else
+            {
+                <div class="border rounded p-3 text-center">
+                    <p>You need to <a asp-controller="Account" asp-action="Login" asp-route-returnUrl="@Context.Request.Path">login</a> to comment</p>
+                    <textarea class="form-control mb-2" rows="2" placeholder="Add a comment..." disabled></textarea>
+                    <div class="d-flex justify-content-end" style="height: 30px;">
+                        <button class="btn btn-sm btn-primary" disabled>Comment</button>
+                    </div>
                 </div>
-            </form>
+            }
         </div>
     </div>
     @for (int i = 0; i < Model.AvailableComments.Count(); i++)
     {
+        var comment = Model.AvailableComments.ElementAt(i);
+        var commenterName = comment.FormName ?? "";
+        var commenterInitials = commenterName.Length >= 2
+        ? commenterName.Substring(0, 2).ToUpper()
+        : commenterName.ToUpper();
+
         <div class="row mb-4">
             <div class="col-3 user-avatar bg-@(i%2==0 ? "primary" : "secondary") rounded-circle d-flex align-items-center justify-content-center comment-from">
-                @if (Model.AvailableComments.ElementAt(i).FormChannelId > 0)
+                @if (comment.FormChannelId > 0)
                 {
-                    <a asp-controller="Member" asp-action="Channel" asp-route-id="@Model.AvailableComments.ElementAt(i).FormChannelId" class="text-dark" style="text-decoration:none">
-                        @Model.AvailableComments.ElementAt(i).FormName.Substring(0, 2).ToUpper()
+                    <a asp-controller="Member" asp-action="Channel" asp-route-id="@comment.FormChannelId" class="text-dark" style="text-decoration:none">
+                        @commenterInitials
                     </a>
                 }
                 else
                 {
-                    @Model.AvailableComments.ElementAt(i).FormName.Substring(0, 2).ToUpper()
+                    @commenterInitials
                 }
             </div>
             <div class="col-9">
                 <div class="d-flex justify-content-between align-content-center">
-                    @if (Model.AvailableComments.ElementAt(i).FormChannelId > 0)
+                    @if (comment.FormChannelId > 0)
                     {
-                        <a asp-controller="Member" asp-action="Channel" asp-route-id="@Model.AvailableComments.ElementAt(i).FormChannelId" class="fw-bold text-dark" style="text-decoration:none">
-                            @Model.AvailableComments.ElementAt(i).FormName
+                        <a asp-controller="Member" asp-action="Channel" asp-route-id="@comment.FormChannelId" class="fw-bold text-dark" style="text-decoration:none">
+                            @comment.FormName
                         </a>
                     }
                     else
                     {
                         <span class="fw-bold text-dark">
-                            @Model.AvailableComments.ElementAt(i).FormName
+                            @comment.FormName
                         </span>
                     }
-                    <span class="text-muted small">@SD.TimeAgo(Model.AvailableComments.ElementAt(i).PostedAt)</span>
+                    <span class="text-muted small">@SD.TimeAgo(comment.PostedAt)</span>
                 </div>
-                <p>@Model.AvailableComments.ElementAt(i).Content</p>
+                <p>@comment.Content</p>
             </div>
         </div>
     }

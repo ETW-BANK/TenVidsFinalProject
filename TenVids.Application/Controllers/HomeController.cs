@@ -33,10 +33,10 @@ namespace TenVids.Application.Controllers
                 var result = await _homeService.GoToHomeAsync(page);
                 return View(result);
             }
-            catch (UnauthorizedAccessException)
-            {
-                return RedirectToAction("Login", "Account");
-            }
+            //catch (UnauthorizedAccessException)
+            //{
+            //    return RedirectToAction("Login", "Account");
+            //}
             catch (Exception ex)
             {
                 TempData["error"] = "An error occurred while processing your request. Please try again later. " + ex.Message;
@@ -51,7 +51,7 @@ namespace TenVids.Application.Controllers
         }
 
         #region API CALLS
-        [Authorize(Roles = $"{SD.UserRole}")]
+        //[Authorize(Roles = $"{SD.UserRole}")]
         [HttpGet]
       
         public async Task<IActionResult> GetVideosForHomeGrid(HomeParameters parameters)

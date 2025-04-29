@@ -1,14 +1,16 @@
 ﻿@using TenVids.Services.Extensions
 @using TenVids.Utilities
-
 @model WatchVideoVM
+
 <style>
+    /* Styling for the video player */
     video {
         width: 100%;
         border-radius: 12px;
         outline: none;
     }
 
+    /* Container for video actions such as like, dislike, etc. */
     .video-actions {
         display: flex;
         justify-content: space-between;
@@ -18,12 +20,14 @@
         border-bottom: 1px solid #e5e5e5;
     }
 
+    /* Styling for video title */
     .video-title {
         font-size: 1.4rem;
         font-weight: 500;
         margin: 12px 0;
     }
 
+    /* Container for video stats like views and date */
     .video-stats {
         display: flex;
         align-items: center;
@@ -31,6 +35,7 @@
         font-size: 0.9rem;
     }
 
+    /* Action buttons for liking, disliking, etc. */
     .action-buttons {
         display: flex;
         gap: 8px;
@@ -68,11 +73,6 @@
         color: #065fd4;
     }
 
-    .like-section i, .dislike-section i {
-        margin-right: 6px;
-        font-size: 1.1rem;
-    }
-
     .action-button {
         display: flex;
         align-items: center;
@@ -95,6 +95,7 @@
             font-size: 1.1rem;
         }
 
+    /* Channel info styling */
     .channel-info {
         display: flex;
         justify-content: space-between;
@@ -119,24 +120,58 @@
 
     .subscribe-btn {
         transition: all 0.3s ease;
-        min-width: 100px; 
+        min-width: 100px;
     }
 
     .btn-danger {
-        background-color: #dc3545; 
+        background-color: #dc3545;
     }
 
     .btn-success {
-        background-color: #28a745; 
+        background-color: #28a745;
+    }
+
+    /* Suggested videos styling */
+    .suggested-video img {
+        width: 100%;
+        max-height: 180px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .suggested-video {
+        margin-bottom: 15px;
+    }
+
+    /* Flexbox layout for main video and suggested videos */
+    .row {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    .col-lg-9 {
+        flex: 0 0 75%; /* Main video takes up 75% of the width */
+        padding-right: 20px;
+    }
+
+    .col-lg-3 {
+        flex: 0 0 25%; /* Suggested videos take up 25% of the width */
+        padding-left: 20px;
+    }
+
+    /* Added margin between main video and suggested videos */
+    .suggested-video-container {
+        margin-top: 20px;
     }
 </style>
 
 <a asp-action="Index" asp-controller="Home" class="btn btn-primary btn-lg">Back</a>
 
 <div class="row mt-3">
-    <div class="col-lg-9 mb-2">
+    <!-- Main Video Section -->
+    <div class="col-lg-9">
         <video controls>
-            <source src="/Video/GetVideoFile?videoId=@Model.Id" type="" />
+            <source src="/Video/GetVideoFile?videoId=@Model.Id" type="video/mp4" />
             Your browser does not support the video tag.
         </video>
 
@@ -180,32 +215,43 @@
             </div>
         </div>
 
+        <!-- Channel Info Section -->
         <div class="channel-info">
             <div class="channel-text">
-            <a asp-action="Channel" asp-controller="Member" class="text-danger text-decoration-none">@Model.ChannelName</a>
+                <a asp-action="Channel" asp-controller="Member" class="text-danger text-decoration-none">@Model.ChannelName</a>
                 <span class="subscriber-count">@SD.FormatView(Model.SubscribersCount) subscribers</span>
             </div>
-            <!-- Check channelId bug fix -->
-
-                <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
-                    @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
-                </button>
-           
-
+            <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
+                @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
+            </button>
         </div>
 
-        <div class="video-description mt-3">
-            <p>@Model.Description</p>
+        <div class="mt-4 ">
+            <partial name="_CommentPartial" model="@Model.CommentVM" />
         </div>
     </div>
 
-    <div class="col-lg-3">
-        <!-- Suggested videos or other sidebar content can go here -->
+    <!-- Suggested Videos Section -->
+    <div class="col-lg-3 suggested-video-container">
+        <h4>Suggested Videos</h4>
+        <ul class="list-unstyled">
+            @foreach (var suggestedVideo in Model.SuggestedVideos)
+            {
+                <li>
+                    <a href="@Url.Action("WatchVideos", "Video", new { id = suggestedVideo.Id })" class="text-decoration-none">
+                        <div class="suggested-video">
+                            <img src="@suggestedVideo.Thumbnail" alt="@suggestedVideo.Title" class="img-fluid" />
+                            <p>@suggestedVideo.Title</p>
+                        </div>
+                    </a>
+                </li>
+            }
+        </ul>
     </div>
 </div>
-<partial name="_CommentPartial" model="@Model.CommentVM" />
-@section Scripts {
 
+
+@section Scripts {
     <input type="hidden" id="videoId" value="@Model.Id" />
     <input type="hidden" id="channelId" value="@Model.ChannelId" />
     <script src="~/js/videoInteractions.js"></script>

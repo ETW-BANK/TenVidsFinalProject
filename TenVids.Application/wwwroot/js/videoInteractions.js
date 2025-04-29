@@ -1,20 +1,16 @@
 ﻿$(document).ready(function () {
-  
+
     const videoId = $('#videoId').val();
     const channelId = $('#channelId').val();
 
-   
     const commentTextarea = $('#textComment');
     const commentButtons = $('#sectionCommentBtns');
 
-    
     commentButtons.hide();
 
-   
     commentTextarea.on('input', function () {
         commentButtons.toggle($(this).val().trim().length > 0);
     });
-
 
     $('#btnCancel').on('click', function (e) {
         e.preventDefault();
@@ -31,6 +27,9 @@
             url: "/Video/SubscribeChannel",
             type: "PUT",
             data: { channelId: channelId },
+            xhrFields: {
+                withCredentials: true // ✅ SEND cookies
+            },
             success: function (data) {
                 if (data.title === "Unsubscribed") {
                     btn.removeClass('btn-success')
@@ -47,11 +46,16 @@
                 }
             },
             error: function (xhr, status, error) {
-                console.error("Subscription error:", error);
-                toastr.error("Failed to update subscription");
+                if (xhr.status === 401) {
+                    const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+                    window.location.href = `/Account/Login?returnurl=${returnUrl}`;
+                } else {
+                    console.error("Subscription error:", error);
+                    toastr.error("Failed to update subscription");
+                }
             }
         });
-    });
+    }); // <-- Missing closing parenthesis here
 
     // Like/Dislike functionality
     window.likeDislike = function (id, action) {

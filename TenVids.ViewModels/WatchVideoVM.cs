@@ -1,4 +1,6 @@
-﻿namespace TenVids.ViewModels
+﻿using TenVids.Models;
+
+namespace TenVids.ViewModels
 {
     public class WatchVideoVM
     {
@@ -16,6 +18,7 @@
         public int ViewsCount { get; set; }
         public int SubscribersCount { get; set; }   
         public CommentsVM CommentVM { get; set; } = new();
-    
+        public List<Videos> SuggestedVideos { get; set; }
+
     }
 }

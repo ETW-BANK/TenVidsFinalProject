@@ -11,6 +11,9 @@ using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using TenVids.Services.HelperMethods;
 using TenVids.Utilities.FileHelpers;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using TenVids.Repository;
+using System.Threading.Channels;
 
 namespace TenVids.Services
 {
@@ -35,10 +38,10 @@ namespace TenVids.Services
         public async Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters)
         {
             var userid = _httpContextAccessor?.HttpContext?.User.GetUserId();   
-            if(userid==null)
-            {
-                throw new UnauthorizedAccessException("User not authenticated");
-            }
+            //if(userid==null)
+            //{
+            //    throw new UnauthorizedAccessException("User not authenticated");
+            //}
             var paginatedList = await _helper.GetVideos(parameters);
 
             return new PaginatedResult<VideoForHomeDto>(
@@ -260,7 +263,14 @@ namespace TenVids.Services
             
             var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                 x => x.Id == videoId,
-                includeProperties: "Channel.Subscribers,Likes,Comments.AppUser,VideoViewers");  
+                includeProperties: "Channel.Subscribers,Likes,Comments.AppUser,VideoViewers");
+
+            var suggestedVideos = _unitOfWork.VideosRepository.GetQueryable()
+          .Where(x => x.ChannelId == video.ChannelId && x.Id != video.Id)
+          .OrderBy(x => Guid.NewGuid()) 
+          .Take(5)
+          .ToList();
+
 
             if (video == null)
             {
@@ -283,28 +293,28 @@ namespace TenVids.Services
             var result = new WatchVideoVM
             {
                 Id = video.Id,
-                Title = video.Title ?? string.Empty, 
-                Description = video.Description ?? string.Empty,  
+                Title = video.Title ?? string.Empty,
+                Description = video.Description ?? string.Empty,
                 CreatedAt = video.CreatedAt,
                 ChannelId = video.ChannelId,
-                ChannelName = video.Channel?.Name ?? string.Empty,  
+                ChannelName = video.Channel?.Name ?? string.Empty,
 
                 IsSubscribed = video.Channel.Subscribers.Any(x => x.AppUserId == userId),
-                IsLiked = (video.Likes.Any(x => x.AppUserId == userId && x.IsLike==true)),
+                IsLiked = (video.Likes.Any(x => x.AppUserId == userId && x.IsLike == true)),
                 IsDisliked = (video.Likes.Any(x => x.AppUserId == userId && x.IsLike == false)),
 
 
                 SubscribersCount = video.Channel.Subscribers.Count(),
-                ViewsCount = video.VideoViewers.Select(x=>x.NumberOfVisits).Sum(),
-                LikesCount = (video.Likes.Where(x=>x.IsLike==true).Count()),
+                ViewsCount = video.VideoViewers.Select(x => x.NumberOfVisits).Sum(),
+                LikesCount = (video.Likes.Where(x => x.IsLike == true).Count()),
                 DislikesCount = (video.Likes.Where(x => x.IsLike == false).Count()),
-              
+
                 CommentVM = new CommentsVM
                 {
                     PostComment = new CommentPostVM
                     {
-                        VideoId = video.Id,  
-                        Content = string.Empty  
+                        VideoId = video.Id,
+                        Content = string.Empty
                     },
                     AvailableComments = video.Comments?.Select(c => new AvailableCommentsVM
                     {
@@ -314,14 +324,15 @@ namespace TenVids.Services
                         PostedAt = c.PostedAt
                     }).ToList()
                 },
-                
+                SuggestedVideos = suggestedVideos
 
             };
             await _videoViewService.HandleVideoViewAsync(userId, videoId, clientIpAddress);
             await _unitOfWork.CompleteAsync();
-
             return result;
         }
+
+     
 
         public async Task<ErrorModel<string>> LikeVideo(int videoId, string action, bool like)
         {

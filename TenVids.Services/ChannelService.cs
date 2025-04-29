@@ -138,7 +138,7 @@ namespace TenVids.Services
                 if (string.IsNullOrEmpty(currentUserId))
                     return ErrorModel<Channel>.Failure("User not authenticated", 401);
 
-                channel.Subscribers ??= []; 
+                channel.Subscribers ??= [];
 
                 var existingSubscription = channel.Subscribers
                     .FirstOrDefault(s => s.AppUserId == currentUserId && s.ChannelId == channelId);
@@ -159,5 +159,6 @@ namespace TenVids.Services
                 return ErrorModel<Channel>.Failure("An error occurred while processing your request", 500);
             }
         }
+
     }
 }
