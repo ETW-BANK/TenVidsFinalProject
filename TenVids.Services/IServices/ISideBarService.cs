@@ -1,5 +1,5 @@
 ﻿
-using TenVids.Models;
+
 using TenVids.Models.DTOs;
 
 namespace TenVids.Services.IServices
@@ -8,5 +8,7 @@ namespace TenVids.Services.IServices
     {
 
         Task<IEnumerable<SubscriptionDto>> GetSubscriptions();
+
+        Task<IEnumerable<HistoryDto>> GetHistory();
     }
 }

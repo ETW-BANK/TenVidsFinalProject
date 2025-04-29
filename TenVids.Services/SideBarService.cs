@@ -1,15 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TenVids.Data.Access.Data;
-using TenVids.Models;
 using TenVids.Models.DTOs;
 using TenVids.Services.Extensions;
 using TenVids.Services.IServices;
+using TenVids.Utilities;
 
 namespace TenVids.Services
 {
@@ -23,6 +18,27 @@ namespace TenVids.Services
         {
             _context = context;
             _httpContextAccessor = httpContextAccessor;
+        }
+
+        public async Task<IEnumerable<HistoryDto>> GetHistory()
+        {
+            var userId=_httpContextAccessor.HttpContext.User.GetUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Enumerable.Empty<HistoryDto>();
+            }
+
+            return await _context.VideoViews
+                .Where(x=>x.AppUserId == userId)
+                .Select(x=>new HistoryDto
+                {
+                    Id=x.VideoId,
+                    Title=x.Video.Title,
+                    ChannelName=x.Video.Channel.Name,
+                    ChannelId=x.Video.Channel.Id,
+                    LastVisitTimeAgo=SD.TimeAgo(x.LastVisit),
+                    LastVisit=x.LastVisit,
+                }).ToListAsync();
         }
 
         public async Task<IEnumerable<SubscriptionDto>> GetSubscriptions()

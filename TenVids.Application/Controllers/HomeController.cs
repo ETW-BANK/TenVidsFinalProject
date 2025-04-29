@@ -75,6 +75,14 @@ namespace TenVids.Application.Controllers
 
             return Json(new ApiResponse(200,result:usrSubscribedChannels));
         }
+        [Authorize(Roles = $"{SD.UserRole}")]
+        [HttpGet]
+        public async Task<IActionResult> GetHistories()
+        {
+            var usrHistories = await _sidebarService.GetHistory();
+
+            return Json(new ApiResponse(200, result: usrHistories));
+        }
 
         #endregion
     }
