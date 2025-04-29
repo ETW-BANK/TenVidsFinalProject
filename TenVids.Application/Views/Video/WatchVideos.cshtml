@@ -1,4 +1,5 @@
-﻿@using TenVids.Utilities
+﻿@using TenVids.Services.Extensions
+@using TenVids.Utilities
 
 @model WatchVideoVM
 <style>
@@ -184,11 +185,13 @@
             <a asp-action="Channel" asp-controller="Member" class="text-danger text-decoration-none">@Model.ChannelName</a>
                 <span class="subscriber-count">@SD.FormatView(Model.SubscribersCount) subscribers</span>
             </div>
+            <!-- Check channelId bug fix -->
 
-            <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
-                @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
-            </button>
+                <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
+                    @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
+                </button>
            
+
         </div>
 
         <div class="video-description mt-3">

@@ -10,6 +10,7 @@ using TenVids.Models.Pagination;
 using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using TenVids.Services.HelperMethods;
+using TenVids.Utilities.FileHelpers;
 
 namespace TenVids.Services
 {
@@ -18,16 +19,18 @@ namespace TenVids.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor? _httpContextAccessor;
         private readonly FileUploadConfig _fileUploadConfig;
-      
+        private readonly IVideoViewService _videoViewService;
         private readonly IHelper _helper;
-      
-        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor,  IOptions<FileUploadConfig> fileUploadConfig,IHelper helper)
+        private readonly IPicService _picservice;
+        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor,  IOptions<FileUploadConfig> fileUploadConfig,IHelper helper,IVideoViewService videoViewService,IPicService picservice)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _fileUploadConfig = fileUploadConfig.Value;
             _helper = helper;
-     
+            _videoViewService = videoViewService;
+            _picservice= picservice;    
+
         }
         public async Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters)
         {
@@ -180,6 +183,7 @@ namespace TenVids.Services
 
                     return ErrorModel<Videos>.Failure("Video not found or you don't have permission", 404);
                 }
+                _picservice.DeletePhotoLocally(existingVideo.Thumbnail);
                 _unitOfWork.VideosRepository.Remove(existingVideo);
                 await _unitOfWork.CompleteAsync();
                 return ErrorModel<Videos>.Success(existingVideo, $"Video '{existingVideo.Title}' deleted successfully");
@@ -256,15 +260,19 @@ namespace TenVids.Services
             
             var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                 x => x.Id == videoId,
-                includeProperties: "Channel.Subscribers,Likes,Comments.AppUser");  
-
-            // Extract the current logged-in user's ID
-            var userId = _httpContextAccessor.HttpContext.User.GetUserId();
+                includeProperties: "Channel.Subscribers,Likes,Comments.AppUser,VideoViewers");  
 
             if (video == null)
             {
                 return null; 
             }
+            var userId = _httpContextAccessor.HttpContext.User.GetUserId();
+            var clientIpAddress = await _helper.GetClientIpAddressAsync();
+            if (clientIpAddress == null)
+            {
+                clientIpAddress = "127.0.1.1";
+            }
+           
             var availableComments = video.Comments?.Select(c => new AvailableCommentsVM
             {
                 Content = c.Content,
@@ -287,9 +295,10 @@ namespace TenVids.Services
 
 
                 SubscribersCount = video.Channel.Subscribers.Count(),
-                ViewsCount = SD.GetRandomNumber(10000, 500000, videoId),
+                ViewsCount = video.VideoViewers.Select(x=>x.NumberOfVisits).Sum(),
                 LikesCount = (video.Likes.Where(x=>x.IsLike==true).Count()),
                 DislikesCount = (video.Likes.Where(x => x.IsLike == false).Count()),
+              
                 CommentVM = new CommentsVM
                 {
                     PostComment = new CommentPostVM
@@ -304,10 +313,12 @@ namespace TenVids.Services
                         FormChannelId = _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == c.AppUserId).Result.Id,
                         PostedAt = c.PostedAt
                     }).ToList()
-                }
-
+                },
+                
 
             };
+            await _videoViewService.HandleVideoViewAsync(userId, videoId, clientIpAddress);
+            await _unitOfWork.CompleteAsync();
 
             return result;
         }

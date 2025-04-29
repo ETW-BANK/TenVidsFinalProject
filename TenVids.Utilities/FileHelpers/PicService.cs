@@ -16,6 +16,20 @@ namespace TenVids.Utilities.FileHelpers
         {
             _webHostEnvironment = webHostEnvironment;
         }
+
+        public void DeletePhotoLocally(string photourl)
+        {
+            string wwwwRootPath = _webHostEnvironment.WebRootPath;
+            string uploadPath = Path.Combine(wwwwRootPath, @"image\thumbnails");
+
+            var oldFilePath = Path.Combine(wwwwRootPath, photourl.TrimStart('\\'));
+
+            if (System.IO.File.Exists(oldFilePath))
+            {
+                System.IO.File.Delete(oldFilePath);
+            }
+        }
+
         public string UploadPics(IFormFile file, string oldpath = "")
         {
             string wwwwRootPath = _webHostEnvironment.WebRootPath;
@@ -43,8 +57,7 @@ namespace TenVids.Utilities.FileHelpers
              file.CopyTo(fileStream);
                 
                 return @"\image\thumbnails\" + fileNmae;
-            
-
+         
 
         }
     }

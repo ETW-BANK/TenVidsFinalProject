@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using TenVids.Data.Access.Data;
 using TenVids.Models;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
@@ -15,11 +17,13 @@ namespace TenVids.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly IHttpContextAccessor _httpContextAccessor;
-        public AccountService(UserManager<ApplicationUser> userManager,SignInManager<ApplicationUser> signInManager, IHttpContextAccessor httpContextAccessor)
+        private readonly TenVidsApplicationContext _context;
+        public AccountService(UserManager<ApplicationUser> userManager,SignInManager<ApplicationUser> signInManager, IHttpContextAccessor httpContextAccessor,TenVidsApplicationContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _httpContextAccessor = httpContextAccessor;
+            _context = context; 
         }
         public Task<LoginVM> Login(string returnurl)
         {
@@ -112,17 +116,27 @@ namespace TenVids.Services
             claimsIdentity.AddClaim(new Claim(ClaimTypes.Email, user.Email!));
             claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id));
 
+            var userChannelId = await _context.Channels
+                .Where(x => x.AppUserId == user.Id)
+                .Select(x => (int?)x.Id)
+                .FirstOrDefaultAsync();
+
+            if (userChannelId.HasValue)
+            {
+                claimsIdentity.AddClaim(new Claim(ClaimTypes.Sid, userChannelId.Value.ToString()));
+            }
+
             // Add user roles to claims
             var roles = await _userManager.GetRolesAsync(user);
             claimsIdentity.AddClaims(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var principal = new ClaimsPrincipal(claimsIdentity);
 
-            // Sign in the user
             await _httpContextAccessor.HttpContext.SignInAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal);
         }
+
 
         private async Task<bool> EmailExists(string email)
         {

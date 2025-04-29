@@ -39,6 +39,7 @@ namespace TenVids.Service.Extensions
             services.AddScoped<IPicService,PicService>();
             services.AddScoped<IHelper, Helper>();
             services.AddScoped<IHomeService,HomeService>();
+           services.AddScoped<IVideoViewService, VideoViewService>();
             services.Configure<FileUploadConfig>(configuration.GetSection("FileUpload"));
             services.AddHttpContextAccessor();
             services.AddSingleton<IMapper>(new MapperConfiguration(cfg =>

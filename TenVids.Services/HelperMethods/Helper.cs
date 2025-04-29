@@ -9,23 +9,31 @@ using TenVids.Repository.IRepository;
 using TenVids.Utilities.FileHelpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http.Json;
+using System.Net;
 
 namespace TenVids.Services.HelperMethods
 {
    public class Helper:IHelper
     {
-
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly IPicService _picService;
+        private readonly HttpClient _httpClient;
 
-        public Helper(IUnitOfWork unitOfWork,IConfiguration configuration, IPicService picService)
+        public Helper(IUnitOfWork unitOfWork,IConfiguration configuration, IPicService picService, IHttpContextAccessor httpContextAccessor)
         {
             _unitOfWork = unitOfWork;
           
             _configuration = configuration;
           
             _picService = picService;
+            _httpClient = new HttpClient()
+            {
+                BaseAddress = new Uri("https://api.ip2location.io")
+            };
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<PaginatedList<VideoForHomeDto>> GetVideos(HomeParameters parameters)
         {
@@ -205,6 +213,89 @@ namespace TenVids.Services.HelperMethods
             await _unitOfWork.CompleteAsync();
             return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
         }
+
+
+        public async Task<VideoViews> AddVideoViewAsync(string userId, int videoId, string ipAddress)
+        {
+            ipAddress = SD.NormalizeIp(ipAddress);
+            var ip2LocationResult = await GetIP2LocationResultAsync(ipAddress);
+
+            var videoViewToAdd = new VideoViews
+            {
+                AppUserId = userId,
+                VideoId = videoId,
+                IpAddress = ipAddress,
+                Country = ip2LocationResult.Country_Name,
+                City = ip2LocationResult.City_Name,
+                PostCode = ip2LocationResult.Zip_Code,
+                Is_Proxy = ip2LocationResult.Is_Proxy,
+                LastVisit = DateTime.UtcNow,
+                NumberOfVisits = 1
+            };
+
+            _unitOfWork.VideoViewRepository.Add(videoViewToAdd);
+            await _unitOfWork.CompleteAsync();
+
+            return videoViewToAdd;
+        }
+
+        public async Task<IP2LocationResultDto> GetIP2LocationResultAsync(string ipAddress)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(ipAddress) ||
+                    IPAddress.IsLoopback(IPAddress.Parse(ipAddress)) ||
+                    ipAddress.StartsWith("192.168.") ||
+                    ipAddress.StartsWith("10.") ||
+                    ipAddress.StartsWith("172."))
+                {
+                    return new IP2LocationResultDto
+                    {
+                        Country_Name = "Local",
+                        City_Name = "Development"
+                    };
+                }
+
+                var response = await _httpClient.GetFromJsonAsync<IP2LocationResultDto>(
+                    $"?key={_configuration["IP2LocationAPIKey"]}&ip={ipAddress}&format=json");
+
+                return response ?? new IP2LocationResultDto();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"IP2Location error for {ipAddress}: {ex.Message}");
+                return new IP2LocationResultDto();
+            }
+        }
+
+        public async Task<string> GetClientIpAddressAsync()
+        {
+            try
+            {
+                var httpContext =_httpContextAccessor?.HttpContext;
+                if (httpContext == null)
+                    return "127.0.0.1"; 
+
+             
+                if (httpContext.Request.Headers.TryGetValue("X-Forwarded-For", out var forwardedFor))
+                {
+                    var ip = forwardedFor.ToString().Split(',').FirstOrDefault()?.Trim();
+                    if (!string.IsNullOrEmpty(ip))
+                        return SD.NormalizeIp(ip);
+                }
+
+                var remoteIp = httpContext.Connection?.RemoteIpAddress?.ToString();
+                if (!string.IsNullOrEmpty(remoteIp))
+                    return SD.NormalizeIp(remoteIp);
+
+                return "127.0.0.1"; 
+            }
+            catch
+            {
+                return "127.0.0.1"; 
+            }
+        }
+
 
     }
 }

@@ -29,12 +29,17 @@ namespace TenVids.Services.Extensions
 
             return givenName ?? string.Empty;
         }
-
-
-
         public static string? GetUserId(this ClaimsPrincipal claimsPrincipal)
         {
             return claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         }
+        public static int GetUserChannelId(this ClaimsPrincipal claimsPrincipal)
+        {
+            return int.Parse(claimsPrincipal.FindFirst(ClaimTypes.Sid)?.Value);
+        
+        }
+
+
+
     }
 }
