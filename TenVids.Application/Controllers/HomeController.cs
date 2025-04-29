@@ -1,9 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using TenVids.Application.Models;
+using TenVids.Data.Access.Data;
 using TenVids.Models.Pagination;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
@@ -12,14 +16,18 @@ namespace TenVids.Application.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+      private readonly ILogger<HomeController> _logger; 
         private readonly IHomeService _homeService;
         private readonly IVideosService _videosService;
-        public HomeController(ILogger<HomeController> logger,IHomeService homeService, IVideosService videosService)
+        private readonly ISideBarService _sidebarService;
+       
+        public HomeController(ILogger<HomeController> logger,IHomeService homeService, IVideosService videosService,ISideBarService sideBarService)
         {
             _logger = logger;
             _homeService = homeService;
             _videosService = videosService;
+            _sidebarService = sideBarService;   
+        
         }
         public async Task<IActionResult> Index(string page)
         {
@@ -46,8 +54,9 @@ namespace TenVids.Application.Controllers
         }
 
         #region API CALLS
-
+        [Authorize(Roles = $"{SD.UserRole}")]
         [HttpGet]
+      
         public async Task<IActionResult> GetVideosForHomeGrid(HomeParameters parameters)
         {
             try
@@ -60,6 +69,14 @@ namespace TenVids.Application.Controllers
                 TempData["error"] = "An error occurred while processing your request. Please try again later. " + ex.Message;
                 return Json(new ApiResponse(500, message: "An error occurred while processing your request. Please try again later."));
             }
+        }
+        [Authorize(Roles = $"{SD.UserRole}")]
+        [HttpGet]
+        public async Task<IActionResult> GetSubscription()
+        {
+            var usrSubscribedChannels = await _sidebarService.GetSubscriptions();
+
+            return Json(new ApiResponse(200,result:usrSubscribedChannels));
         }
 
         #endregion

@@ -11,6 +11,8 @@ namespace TenVids.Data.Access.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<VideoViews> VideoViews { get; set; }
         public DbSet<Comment> Comment { get; set; }
+        public DbSet<Likes> Likes { get; set; }
+        public DbSet<Subscribe> Subscribe { get; set; }
         public TenVidsApplicationContext(DbContextOptions<TenVidsApplicationContext> option): base(option)    
         {
             

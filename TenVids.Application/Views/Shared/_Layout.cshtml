@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/TenVids.Application.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.2.2/css/dataTables.dataTables.css" />
 </head>
 <body>
     <header>
@@ -25,22 +26,22 @@
                         <li class="nav-item">
                             <a class="nav-link text-white @Html.IsActive("Home","Index")" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        
-                        @if(User.IsInRole(SD.AdminRole))
+
+                        @if (User.IsInRole(SD.AdminRole))
                         {
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle text-white" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     Adminstration
-                                 </a>
+                                </a>
                                 <ul class="dropdown-menu">
                                     <li class="nav-item">
                                         <a class="dropdown-item" asp-area="" asp-controller="Admin" asp-action="Category">Category</a>
-                                      </li>
-                                 </ul>
+                                    </li>
+                                </ul>
                             </li>
                         }
                     </ul>
-                   <partial name="_LoginPartial" />
+                    <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
@@ -56,15 +57,15 @@
             &copy; @DateTime.Now.Year - <a asp-area="" asp-controller="Home" asp-action="Index">TenVids</a>
         </div>
     </footer>
-      <partial name="_Notification" />
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <partial name="_Notification" />
 
-    <!-- Toastr -->
+    <!-- JavaScript Libraries -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.2.2/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

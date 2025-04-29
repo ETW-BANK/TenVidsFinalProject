@@ -38,6 +38,7 @@ namespace TenVids.Service.Extensions
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<IPicService,PicService>();
             services.AddScoped<IHelper, Helper>();
+            services.AddScoped<ISideBarService, SideBarService>();  
             services.AddScoped<IHomeService,HomeService>();
            services.AddScoped<IVideoViewService, VideoViewService>();
             services.Configure<FileUploadConfig>(configuration.GetSection("FileUpload"));

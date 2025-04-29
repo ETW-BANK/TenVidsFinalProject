@@ -56,6 +56,7 @@ else
                 </li>
             </ul>
         </nav>
+
         <!-- Navbar for smaller screens -->
         <nav class="d-lg-none mb-2">
             <div class="p-2 text-bg-dark rounded d-flex justify-content-between" style="width: 100%;">
@@ -76,6 +77,8 @@ else
                 </a>
             </div>
         </nav>
+
+        <!-- Main Content Area -->
         <div class="px-2 rounded" style="background-color:transparent; width:100%">
             @if (Model.Page == null || string.Equals(Model.Page, "Home", StringComparison.OrdinalIgnoreCase))
             {
@@ -84,7 +87,33 @@ else
             }
             else
             {
-                <p>Others</p>
+                <div class="p-4 border rounded table-wrapper">
+                    <table id="tbData" class="table table-striped table-bordered" style="width:100%">
+                        <thead class="thead-light">
+                            <tr class="table-info">
+                                @if (Model.Page == "Subscriptions")
+                                {
+                                    <th>Channel Name</th>
+                                    <th>Number of Available Videos</th>
+                                }
+                                else if (Model.Page == "History")
+                                {
+                                    <th>Video Title</th>
+                                    <th>Channel Name</th>
+                                    <th>Visited</th>
+                                }
+                                else if (Model.Page == "Likes" || Model.Page == "Dislikes")
+                                {
+                                    <th>Video Title</th>
+                                    <th>Channel Name</th>
+                                    <th>Video Created At</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody></tbody> 
+                    </table>
+
+                </div>
             }
         </div>
     </div>
@@ -92,4 +121,139 @@ else
 
 @section Scripts {
     <script src="~/js/home_home.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            
+            if (window.location.href.indexOf("Subscriptions") > -1) {
+                fetchSubscriptions();
+            }
+
+            if (window.location.href.indexOf("History") > -1) {
+                fetchHistory();
+            }
+
+            
+            if (window.location.href.indexOf("Likes") > -1) {
+                fetchLikes();
+            }
+
+           
+            if (window.location.href.indexOf("Dislikes") > -1) {
+                fetchDislikes();
+            }
+        });
+
+        function fetchSubscriptions() {
+            $.ajax({
+                url: '/Home/GetSubscription',
+                method: 'GET',
+                success: function (data) {
+                    console.log("API Response:", data); 
+                    if (data && data.result) {
+                        console.log("Subscriptions:", data.result); 
+                        const subscriptions = data.result;
+                        let tableContent = '';
+                        subscriptions.forEach(function (channel) {
+                            tableContent += `
+                <tr>
+                    <td>${channel.channelName}</td>
+                    <td>${channel.videosCount}</td>
+                </tr>
+            `;
+                        });
+
+                        $('#tbData tbody').html(tableContent);
+                    }
+                },
+                error: function (err) {
+                    console.error('Error fetching subscriptions', err);
+                }
+            });
+        }
+
+
+
+        function fetchHistory() {
+            $.ajax({
+                url: '/YourController/GetHistory', 
+                method: 'GET',
+                success: function (data) {
+                    if (data && data.result) {
+                        
+                        const history = data.result;
+                        let tableContent = '';
+                        history.forEach(function (historyItem) {
+                            tableContent += `
+                                        <tr>
+                                            <td>${historyItem.VideoTitle}</td>
+                                            <td>${historyItem.ChannelName}</td>
+                                            <td>${historyItem.Visited}</td>
+                                        </tr>
+                                    `;
+                        });
+                        $('#tbData tbody').html(tableContent);  
+                    }
+                },
+                error: function (err) {
+                    console.error('Error fetching history', err);
+                }
+            });
+        }
+
+        function fetchLikes() {
+            $.ajax({
+                url: '/YourController/GetLikes', 
+                method: 'GET',
+                success: function (data) {
+                    if (data && data.result) {
+                       
+                        const likes = data.result;
+                        let tableContent = '';
+                        likes.forEach(function (like) {
+                            tableContent += `
+                                        <tr>
+                                            <td>${like.VideoTitle}</td>
+                                            <td>${like.ChannelName}</td>
+                                            <td>${like.VideoCreatedAt}</td>
+                                        </tr>
+                                    `;
+                        });
+                        $('#tbData tbody').html(tableContent);  
+                    }
+                },
+                error: function (err) {
+                    console.error('Error fetching likes', err);
+                }
+            });
+        }
+
+        function fetchDislikes() {
+            $.ajax({
+                url: '/YourController/GetDislikes', 
+                method: 'GET',
+                success: function (data) {
+                    if (data && data.result) {
+                        
+                        const dislikes = data.result;
+                        let tableContent = '';
+                        dislikes.forEach(function (dislike) {
+                            tableContent += `
+                                        <tr>
+                                            <td>${dislike.VideoTitle}</td>
+                                            <td>${dislike.ChannelName}</td>
+                                            <td>${dislike.VideoCreatedAt}</td>
+                                        </tr>
+                                    `;
+                        });
+                        $('#tbData tbody').html(tableContent); 
+                    }
+                },
+                error: function (err) {
+                    console.error('Error fetching dislikes', err);
+                }
+            });
+        }
+    </script>
 }
+
