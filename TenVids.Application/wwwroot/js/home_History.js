@@ -2,30 +2,28 @@
 
 $(document).ready(function () {
     const currentPage = getCurrentPage();
+    console.log('Current page:', currentPage);  // Debug
 
     if (currentPage === 'subscriptions') {
         loadSubscriptions();
     } else if (currentPage === 'history') {
         loadHistories();
+    } else if (currentPage === 'likes') {
+        console.log('Initializing likes table');
+        loadLikeDislike(true);  // true for likes
+    } else if (currentPage === 'dislikes') {
+        console.log('Initializing dislikes table');
+        loadLikeDislike(false);  // false for dislikes
     }
-    else if (currentPage === 'like') {
-        loadLikeDislike(true);
-    }
-    else if (currentPage === 'dislike') {
-        loadLikeDislike(false);
-    }
-
 });
 
 function getCurrentPage() {
-   
     const url = window.location.href.toLowerCase();
     if (url.includes('subscriptions')) return 'subscriptions';
     if (url.includes('history')) return 'history';
-    if (url.includes('like')) return 'like';
-    if (url.includes('dislike')) return 'dislike';
+    if (url.includes('likes')) return 'likes';  // Must match Model.Page
+    if (url.includes('dislikes')) return 'dislikes';  // Must match Model.Page
 
-   
     return $('body').data('current-page') || 'home';
 }
 function loadLikeDislike(liked) {
