@@ -1,1 +1,37 @@
-﻿<p>Member</p>
+﻿@using TenVids.Services.Extensions
+@model MemberVM
+
+<div class="card border-primary mb-3">
+    <div class="card-header">
+        <div class="row">
+            <div class="col">
+                <h3 class="text-warning">@Model.Name</h3>
+                <span>Created on @Model.CreatedAt.ToShortDateString()</span>
+            </div>
+            <div class="col text-end">
+                <section>
+                    @Model.NumberOfSubscribers.ToString("N0") @(Model.NumberOfSubscribers > 1 ? "Subscribers" : "Subscriber"),
+                    @Model.NumberOfAvailableVideos.ToString("N0") @(Model.NumberOfAvailableVideos > 1 ? "Videos" : "Video")
+                </section>
+                @{
+                    var userChannelId = User.GetUserChannelId();
+                    if (userChannelId.HasValue && userChannelId.Value != Model.ChannelId)
+                    {
+                        <form method="post">
+                            <button asp-action="SubscribeChannel" asp-route-channelId="@Model.ChannelId" type="submit" class="btn btn@(Model.UserIsSubscribed == true ? "" : "-outline")-dark">
+                                @(Model.UserIsSubscribed ? "Subscribed" : "Subscribe")
+                            </button>
+                        </form>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">
+            @Model.About
+        </h5>
+        <hr />
+        <label>Available Videos</label>
+    </div>
+</div>
