@@ -107,7 +107,8 @@
                                 <th>Channel Name</th>
                                 <th>Visited</th>
                             }
-                            else if (Model.Page == "Likes" || Model.Page == "Dislikes")
+                            else if (Model.Page?.ToLower() == "likes" || Model.Page?.ToLower() == "dislikes")
+
                             {
                                 <th>Video Title</th>
                                 <th>Channel Name</th>

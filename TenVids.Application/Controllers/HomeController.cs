@@ -84,6 +84,14 @@ namespace TenVids.Application.Controllers
             return Json(new ApiResponse(200, result: usrHistories));
         }
 
+        [Authorize(Roles = $"{SD.UserRole}")]
+        [HttpGet]
+        public async Task<IActionResult> GetLikesDislikesVideos(bool liked)
+        {
+            var usrLikeDislikeVideos = await _sidebarService.GetLikeDislike(liked);
+            return Json(new ApiResponse(200, result: usrLikeDislikeVideos));
+        }
+
         #endregion
     }
 }

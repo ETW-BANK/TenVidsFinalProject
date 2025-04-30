@@ -10,5 +10,7 @@ namespace TenVids.Services.IServices
         Task<IEnumerable<SubscriptionDto>> GetSubscriptions();
 
         Task<IEnumerable<HistoryDto>> GetHistory();
+
+        Task<IEnumerable<LikeDislikeDto>> GetLikeDislike(bool liked);
     }
 }

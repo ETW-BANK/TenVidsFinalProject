@@ -41,6 +41,32 @@ namespace TenVids.Services
                 }).ToListAsync();
         }
 
+        public async Task<IEnumerable<LikeDislikeDto>> GetLikeDislike(bool liked)
+        {
+            var userId = _httpContextAccessor.HttpContext.User.GetUserId();
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Enumerable.Empty<LikeDislikeDto>();
+            }
+
+            var result = await _context.Likes
+                .Where(x => x.AppUserId == userId && x.IsLike == liked)
+                .Select(x => new LikeDislikeDto
+                {
+                    Id = x.VideoId,
+                    Title = x.Video.Title,
+                    Thumbnail = x.Video.Thumbnail,
+                    ChannelName = x.Video.Channel.Name,
+                    ChannelId = x.Video.Channel.Id,
+                    CreatedAtTimeAgo = SD.TimeAgo(x.Video.CreatedAt),
+                    CreatedAt = x.Video.CreatedAt,
+                
+                }).ToListAsync();
+
+            return result;
+        }
+
         public async Task<IEnumerable<SubscriptionDto>> GetSubscriptions()
         {
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
