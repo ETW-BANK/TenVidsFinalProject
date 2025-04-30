@@ -185,26 +185,36 @@
             </div>
 
             <div class="action-buttons">
-                <div class="like-dislike-container">
-                    <div class="like-section @(Model.IsLiked ? "active" : "")" id="likeBtn" onclick="likeDislike('likeBtn', 'like')">
-                        <i class="bi bi-hand-thumbs-up-fill"></i>
-                        <span>@SD.FormatView(Model.LikesCount)</span>
-                    </div>
-                    <div class="dislike-section @(Model.IsDisliked ? "active" : "")" id="dislikeBtn" onclick="likeDislike('dislikeBtn', 'dislike')">
-                        <i class="bi bi-hand-thumbs-down-fill"></i>
-                        <span>@SD.FormatView(Model.DislikesCount)</span>
-                    </div>
-                </div>
 
-                <button class="action-button">
-                    <i class="bi bi-share"></i>
-                    <span>Share</span>
-                </button>
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <div class="like-dislike-container" hidden>
 
-                <button class="action-button">
-                    <i class="bi bi-clipboard-plus"></i>
-                    <span>Save</span>
-                </button>
+                        <div class="like-section @(Model.IsLiked ? "active" : "")" id="likeBtn" onclick="likeDislike('likeBtn', 'like')">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                            <span>@SD.FormatView(Model.LikesCount)</span>
+                        </div>
+                        <div class="dislike-section @(Model.IsDisliked ? "active" : "")" id="dislikeBtn" onclick="likeDislike('dislikeBtn', 'dislike')">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                            <span>@SD.FormatView(Model.DislikesCount)</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="like-dislike-container" >
+
+                        <div class="like-section @(Model.IsLiked ? "active" : "")" id="likeBtn" onclick="likeDislike('likeBtn', 'like')">
+                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                            <span>@SD.FormatView(Model.LikesCount)</span>
+                        </div>
+                        <div class="dislike-section @(Model.IsDisliked ? "active" : "")" id="dislikeBtn" onclick="likeDislike('dislikeBtn', 'dislike')">
+                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                            <span>@SD.FormatView(Model.DislikesCount)</span>
+                        </div>
+                    </div>
+                }
+
 
                 <form method="post">
                     <button asp-action="DownloadVideo" asp-route-videoId="@Model.Id" type="submit" class="action-button">
@@ -220,10 +230,20 @@
             <div class="channel-text">
                 <a asp-action="Channel" asp-controller="Member" class="text-danger text-decoration-none">@Model.ChannelName</a>
                 <span class="subscriber-count">@SD.FormatView(Model.SubscribersCount) subscribers</span>
+
+                
             </div>
-            <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
-                @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
-            </button>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <button id="subscribeBtn" disabled class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
+                    @(Model.IsSubscribed ? "Subscribed ✓" : "Login To Subscribe")
+                </button>
+            }else{
+                <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
+                    @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
+                </button>
+            }
+           
         </div>
 
         <div class="mt-4 ">
