@@ -11,9 +11,6 @@ using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using TenVids.Services.HelperMethods;
 using TenVids.Utilities.FileHelpers;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using TenVids.Repository;
-using System.Threading.Channels;
 
 namespace TenVids.Services
 {
@@ -492,6 +489,25 @@ namespace TenVids.Services
                 .AsNoTracking()
                 .FirstOrDefaultAsync();
         }
+        public async Task<List<object>> GetVideosByChannelIdAsync(int channelId)
+        {
+            var videos = await _unitOfWork.VideosRepository.GetQueryable()
+                .Where(x => x.ChannelId == channelId)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Title,
+                    x.ChannelId,
+                    ThumbnailUrl = x.Thumbnail.Replace("\\", "/"),
+                    x.Description,
+                    CreatedAtTimeAgo = SD.TimeAgo(x.CreatedAt),
+                    x.CreatedAt,
+                    NumberOfViews = x.VideoViewers.Count()
+                })
+                .ToListAsync();
+
+            return videos.Cast<object>().ToList();
+        }
         //public async Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
         //{
         //    var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
@@ -529,10 +545,7 @@ namespace TenVids.Services
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<VideoVM>> GetVideosByChannelIdAsync(int channelId)
-        {
-            throw new NotImplementedException();
-        }
+     
 
         public Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
         {
