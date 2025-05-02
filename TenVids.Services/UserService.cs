@@ -39,10 +39,90 @@ namespace TenVids.Services
             return result;
         }
 
-        public Task<ApplicationUser> CreateUser(UserAddEditVM model)
+        public async Task<ApplicationUser> CreateUser(UserAddEditVM model)
         {
-            throw new NotImplementedException();
+            try
+            {
+                IdentityResult result;
+                ApplicationUser user;
+
+                if (string.IsNullOrEmpty(model.Id))
+                {
+                    // Create new user
+                    user = new ApplicationUser
+                    {
+                        UserName = model.Name.ToLower(),
+                        Email = model.Email,
+                        Name = model.Name
+                    };
+
+                    result = await _userManager.CreateAsync(user, model.Password);
+                }
+                else
+                {
+                    // Update existing user
+                    user = await _userManager.FindByIdAsync(model.Id);
+                    if (user == null) return null;
+
+                    user.UserName = model.Name.ToLower();
+                    user.Email = model.Email;
+                    user.Name = model.Name;
+
+                    result = await _userManager.UpdateAsync(user);
+
+                    // Update password if provided
+                    if (!string.IsNullOrEmpty(model.Password))
+                    {
+                        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                        await _userManager.ResetPasswordAsync(user, token, model.Password);
+                    }
+                }
+
+                if (!result.Succeeded) return null;
+
+                // Update roles
+                var currentRoles = await _userManager.GetRolesAsync(user);
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+                await _userManager.AddToRolesAsync(user, model.UserRoles);
+
+                return user;
+            }
+            catch
+            {
+                return null;
+            }
         }
+
+
+        public async Task<(bool IsValid, UserAddEditVM Model)> ValidateUserForAddAsync(UserAddEditVM model)
+        {
+            var result = await AddUserAsync(model.Id); 
+            bool isValid = true;
+
+            if (model.Id == null) 
+            {
+                if (string.IsNullOrWhiteSpace(model.Password))
+                {
+                    isValid = false;
+                }
+
+                if (model.UserRoles == null || model.UserRoles.Count == 0)
+                {
+                    isValid = false;
+                }
+                if(isValid&&NameExists(model.Name).GetAwaiter().GetResult()) 
+                { 
+                isValid=false;
+                }
+                if (isValid && EmailExists(model.Email).GetAwaiter().GetResult())
+                {
+                    isValid = false;
+                }
+            }
+
+            return (isValid, result);
+        }
+
 
         public async Task<IEnumerable<UserDisplayVM>> GetAllUsersAsync()
         {
@@ -68,6 +148,18 @@ namespace TenVids.Services
         public async Task<List<string>> GetApplicationRols()
         {
             return await _roleManager.Roles.Select(x=>x.Name).ToListAsync();
+        }
+
+       public async Task<bool> EmailExists(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            return user != null;
+        }
+
+        public async Task<bool> NameExists(string name)
+        {
+            var user = await _userManager.FindByNameAsync(name);
+            return user != null;
         }
     }
 }

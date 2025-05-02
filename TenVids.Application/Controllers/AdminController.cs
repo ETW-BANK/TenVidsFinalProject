@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TenVids.Models;
@@ -35,6 +36,60 @@ namespace TenVids.Application.Controllers
 
             return View(resukt);    
         }
+     
+    
+        [HttpPost]
+        public async Task<IActionResult> AddEditUser(UserAddEditVM model)
+        {
+            if (string.IsNullOrEmpty(model.Id))
+            {
+                ModelState.Remove("Id");
+            }
+
+          
+            model.ApplicationRoles = await _userService.GetApplicationRols();
+
+         
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (string.IsNullOrEmpty(model.Id))
+            {
+                if (string.IsNullOrEmpty(model.Password))
+                {
+                    ModelState.AddModelError("Password", "Password is required");
+                    return View(model);
+                }
+
+                if (await _userService.NameExists(model.Name))
+                {
+                    ModelState.AddModelError("Name", "Username already exists");
+                    return View(model);
+                }
+
+                if (await _userService.EmailExists(model.Email))
+                {
+                    ModelState.AddModelError("Email", "Email already exists");
+                    return View(model);
+                }
+            }
+
+    
+            var result = await _userService.CreateUser(model);
+            if (result == null)
+            {
+                ModelState.AddModelError("", "Failed to create user");
+                return View(model);
+            }
+
+            TempData["success"] = $"User {(string.IsNullOrEmpty(model.Id) ? "created" : "updated")} successfully!";
+            return RedirectToAction("AllUsers");
+        }
+
+
+
         public async Task<IActionResult> Category()
         {
             var categories = await _categoryService.GetAllCategoriesAsync();

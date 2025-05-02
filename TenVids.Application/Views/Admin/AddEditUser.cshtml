@@ -1,10 +1,11 @@
-﻿@model TenVids.ViewModels.UserAddEditVM
+﻿@model UserAddEditVM
 
 <div class="d-flex justify-content-center">
     <div class="col-lg-6">
         <main class="form-signin">
             <form method="post" asp-action="AddEditUser">
-                <input type="hidden" asp-for="Id" />
+                <input type="text" asp-for="Id" hidden />
+
 
                 <div class="text-center my-4">
                     <h1 class="h3 font-weight-normal">

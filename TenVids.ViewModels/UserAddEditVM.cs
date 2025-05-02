@@ -1,24 +1,29 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
 using TenVids.ViewModels.CustomValidation;
 
-namespace TenVids.ViewModels
+public class UserAddEditVM
 {
-   public class UserAddEditVM
-    {
-        public string Id { get; set; }
-        [Display(Name="Name(Username)")]
-        [StringCustomValidation("Name",true,3,15, "^[a-zA-Z\\s]+$", "Use letters only please")]
-        public string Name { get; set; }
+    public string Id { get; set; }  // No [Required] attribute
 
-        [StringCustomValidation("Email", true, 0, 0, "^.+@[^\\.].*\\.[a-z]{2,}$", "Invalid email address")]
-        public string Email { get; set; }
+    [Display(Name = "Name (Username)")]
+    [StringCustomValidation(name: "Name", required: true, minLength: 3, maxLength: 15,
+        regex: "^[a-zA-Z\\s]+$", regexErrorMessage: "Use letters only please")]
+    public string Name { get; set; }
 
-        [StringCustomValidation("Password", false, 6, 15, "^(?=.*[0-9]+.*)(?=.*[a-zA-Z]+.*)[0-9a-zA-Z]{6,15}$", "Password must contain at least one letter, at least one number, and be between 6-15 characters in length with no special characters.")]
-        public string Password { get; set; }
-        [Required]
-        [Display(Name = "Roles")]
-        public List<string> UserRoles { get; set; }   
-        public List<string> ApplicationRoles { get; set; }
+    [StringCustomValidation(name: "Email", required: true, minLength: 0, maxLength: 0,
+        regex: @"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$", regexErrorMessage: "Invalid email format")]
+    public string Email { get; set; }
 
-    }
+    [StringCustomValidation(name: "Password", required: false, minLength: 8, maxLength: 15,
+        regex: @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,15}$",
+        regexErrorMessage: "Password must be 8–15 characters, include upper/lowercase letters and a number")]
+    public string Password { get; set; }
+
+    [Required(ErrorMessage = "At least one role is required")]
+    [Display(Name = "Roles")]
+    public List<string> UserRoles { get; set; }
+
+    [ValidateNever]
+    public List<string> ApplicationRoles { get; set; }
 }
