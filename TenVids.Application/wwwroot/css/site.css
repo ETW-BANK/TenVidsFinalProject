@@ -188,3 +188,7 @@ video {
 .suggested-video-container {
     margin-top: 20px;
 }
+.table-wrapper {
+    width: 100%;
+    overflow: auto;
+}

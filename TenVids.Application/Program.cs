@@ -17,7 +17,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Register services using the extension
 var serviceRegisterExtension = new ServiceRegisterExtension();
 serviceRegisterExtension.RegisterServices(builder.Services, builder.Configuration);
-
+    
 var app = builder.Build();
 
 // Configure the HTTP request pipeline

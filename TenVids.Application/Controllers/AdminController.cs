@@ -14,16 +14,33 @@ namespace TenVids.Application.Controllers
     public class AdminController : Controller
     {
         private readonly ICategoryService _categoryService;
+        private readonly IUserService _userService;
 
-        public AdminController(ICategoryService categoryService)
+        public AdminController(ICategoryService categoryService, IUserService userService)
         {
             _categoryService = categoryService;
+            _userService = userService;
+        }
+
+        public async Task<IActionResult> AllUsers()
+        {
+            var result= await _userService.GetAllUsersAsync();
+            return View(result);
+        }
+        
+
+        public async Task<IActionResult> AddEditUser(string id)
+        {
+            var resukt= await _userService.AddUserAsync(id);
+
+            return View(resukt);    
         }
         public async Task<IActionResult> Category()
         {
             var categories = await _categoryService.GetAllCategoriesAsync();
             return View(categories);
         }
+
         [HttpGet]
         public async Task<IActionResult> Upsert(int? id)
         {

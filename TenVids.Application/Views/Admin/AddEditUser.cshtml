@@ -1,0 +1,71 @@
+﻿@model TenVids.ViewModels.UserAddEditVM
+
+<div class="d-flex justify-content-center">
+    <div class="col-lg-6">
+        <main class="form-signin">
+            <form method="post" asp-action="AddEditUser">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="text-center my-4">
+                    <h1 class="h3 font-weight-normal">
+                        @(string.IsNullOrEmpty(Model.Id) ? "Add" : "Edit") User
+                    </h1>
+                </div>
+
+                <div class="form-floating mt-4 mb-3">
+                    <input asp-for="Name" class="form-control" placeholder="Name (Username)" />
+                    <label asp-for="Name"></label>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Email" class="form-control" placeholder="Email" />
+                    <label asp-for="Email"></label>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-floating mb-3">
+                    <input asp-for="Password" type="password" class="form-control" placeholder="Password" />
+                    <label asp-for="Password">
+                        Password @(string.IsNullOrEmpty(Model.Id) ? "" : "(Leave blank to keep unchanged)")
+                    </label>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Roles</label>
+                    <div class="btn-group" role="group" aria-label="User roles">
+                        @foreach (var role in Model.ApplicationRoles ?? new List<string>())
+                        {
+                            var isChecked = Model.UserRoles != null && Model.UserRoles.Contains(role);
+                            <input type="checkbox" name="UserRoles" value="@role" id="@role" class="btn-check" @(isChecked ? "checked" : "") />
+                            <label class="btn btn-outline-primary me-1" for="@role">@role</label>
+                        }
+                    </div>
+                    <span asp-validation-for="UserRoles" class="text-danger d-block mt-1"></span>
+                </div>
+
+                <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                <div class="row my-4">
+                    <div class="col-6">
+                        <div class="d-grid">
+                            <button class="btn btn-info" type="submit">
+                                @(string.IsNullOrEmpty(Model.Id) ? "Add" : "Edit") User
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-grid">
+                            <a asp-action="AllUsers" class="btn btn-danger">Back to list</a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

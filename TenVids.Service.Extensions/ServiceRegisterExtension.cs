@@ -40,15 +40,13 @@ namespace TenVids.Service.Extensions
             services.AddScoped<IHelper, Helper>();
             services.AddScoped<ISideBarService, SideBarService>(); 
             services.AddScoped<IMembersService, MembersService>();
+            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IHomeService,HomeService>();
            services.AddScoped<IVideoViewService, VideoViewService>();
             services.Configure<FileUploadConfig>(configuration.GetSection("FileUpload"));
             services.AddHttpContextAccessor();
-            services.AddSingleton<IMapper>(new MapperConfiguration(cfg =>
-            {
-                cfg.AddProfile<VideoProfile>();
-             
-            }).CreateMapper());
+            services.AddSession();
+           services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
    
             var connectionString = configuration.GetConnectionString("TenVidDb");
             services.AddDbContext<TenVidsApplicationContext>(options =>
@@ -66,7 +64,7 @@ namespace TenVids.Service.Extensions
             })
             .AddEntityFrameworkStores<TenVidsApplicationContext>()
             .AddDefaultTokenProviders();
-
+           
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
                 {
