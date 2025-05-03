@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Threading.Tasks;
 using TenVids.Models;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.ViewModels;
+using Xunit;
 
 namespace TenVids.Application.Controllers
 {
@@ -88,6 +88,74 @@ namespace TenVids.Application.Controllers
             return RedirectToAction("AllUsers");
         }
 
+        [HttpPost]
+
+        public async Task<IActionResult> LockUser(string id)
+        {
+            var result=await _userService.LockUserAsync(id);
+            if(!ModelState.IsValid) 
+            
+            {
+                TempData["notification"] = "User Not Found";
+                return RedirectToAction("AllUsers");
+            }
+           
+           
+
+            TempData["notification"] = "User Locked Sucessfully";
+
+            return RedirectToAction("AllUsers");
+
+        }
+        [HttpPost]
+
+        public async Task<IActionResult> UnLockUser(string id)
+        {
+            var result = await _userService.UnLockUserAsync(id);
+            if (!ModelState.IsValid)
+
+            {
+                TempData["notification"] = "User not found";
+                return RedirectToAction("AllUsers");
+            }
+
+            TempData["notification"] = "User UnLocked Sucessfully";
+
+            return RedirectToAction("AllUsers");
+
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteUser([FromBody] DeleteUserRequest request) 
+        {
+            if (string.IsNullOrEmpty(request?.Id))
+            {
+                return Json(new ApiResponse(400, "Bad Request", "User ID is required"));
+            }
+
+            try
+            {
+                var result = await _userService.DeleteUserAsync(request.Id);
+
+                if (result)
+                {
+                    return Json(new ApiResponse(200, "Success", $"User with ID {request.Id} has been deleted"));
+                }
+                else
+                {
+                    return Json(new ApiResponse(404, "Not Found", "User not found or could not be deleted"));
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new ApiResponse(500, "Error", ex.Message));
+            }
+        }
+
+        public class DeleteUserRequest
+        {
+            public string Id { get; set; }
+        }
 
 
         public async Task<IActionResult> Category()

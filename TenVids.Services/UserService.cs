@@ -60,7 +60,6 @@ namespace TenVids.Services
                 }
                 else
                 {
-                    // Update existing user
                     user = await _userManager.FindByIdAsync(model.Id);
                     if (user == null) return null;
 
@@ -70,7 +69,6 @@ namespace TenVids.Services
 
                     result = await _userManager.UpdateAsync(user);
 
-                    // Update password if provided
                     if (!string.IsNullOrEmpty(model.Password))
                     {
                         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
@@ -80,7 +78,6 @@ namespace TenVids.Services
 
                 if (!result.Succeeded) return null;
 
-                // Update roles
                 var currentRoles = await _userManager.GetRolesAsync(user);
                 await _userManager.RemoveFromRolesAsync(user, currentRoles);
                 await _userManager.AddToRolesAsync(user, model.UserRoles);
@@ -92,37 +89,6 @@ namespace TenVids.Services
                 return null;
             }
         }
-
-
-        public async Task<(bool IsValid, UserAddEditVM Model)> ValidateUserForAddAsync(UserAddEditVM model)
-        {
-            var result = await AddUserAsync(model.Id); 
-            bool isValid = true;
-
-            if (model.Id == null) 
-            {
-                if (string.IsNullOrWhiteSpace(model.Password))
-                {
-                    isValid = false;
-                }
-
-                if (model.UserRoles == null || model.UserRoles.Count == 0)
-                {
-                    isValid = false;
-                }
-                if(isValid&&NameExists(model.Name).GetAwaiter().GetResult()) 
-                { 
-                isValid=false;
-                }
-                if (isValid && EmailExists(model.Email).GetAwaiter().GetResult())
-                {
-                    isValid = false;
-                }
-            }
-
-            return (isValid, result);
-        }
-
 
         public async Task<IEnumerable<UserDisplayVM>> GetAllUsersAsync()
         {
@@ -160,6 +126,69 @@ namespace TenVids.Services
         {
             var user = await _userManager.FindByNameAsync(name);
             return user != null;
+        }
+
+        public async Task<bool> LockUserAsync(string id)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if (user == null)
+                {
+                    return false; 
+                }
+
+                if (!user.LockoutEnabled)
+                {
+                    user.LockoutEnabled = true;
+                    var enableLockoutResult = await _userManager.UpdateAsync(user);
+                    if (!enableLockoutResult.Succeeded)
+                    {
+                        return false; 
+                    }
+                }
+
+                var lockoutResult = await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddDays(1));
+                return lockoutResult.Succeeded;
+            }
+            catch
+            {
+              
+                return false;
+            }
+        }
+
+        public async Task<bool> UnLockUserAsync(string id)
+        {
+            try
+            {
+                var user = await _userManager.FindByIdAsync(id);
+                if (user == null)
+                {
+                    return false;
+                }
+
+                var UnlockoutResult = await _userManager.SetLockoutEndDateAsync(user, null);
+                return UnlockoutResult.Succeeded;
+            }
+            catch
+            {
+
+                return false;
+            }
+        }
+
+        public async Task<bool> DeleteUserAsync(string id)
+        {
+            if (string.IsNullOrEmpty(id))
+                return false;
+
+            var user = await _userManager.FindByIdAsync(id); 
+            if (user == null)
+                return false;
+
+            var result = await _userManager.DeleteAsync(user);
+            return result.Succeeded;
         }
     }
 }

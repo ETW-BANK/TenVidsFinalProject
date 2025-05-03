@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<UserDisplayVM>
 
+
 <a class="btn btn-primary" asp-action="AddEditUser">Create User</a>
 <div class="card border-primary my-3">
     <div class="card-header">All Users</div>
@@ -72,3 +73,49 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+
+    <script>
+       
+        async function confirmation(message) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: message,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            });
+            return result.isConfirmed;
+        }
+
+        async function deleteUser(id, name) {
+            if (await confirmation('Warning: You are about to permanently delete user "' + name + '". This cannot be undone!')) {
+                try {
+                    const response = await fetch('/Admin/DeleteUser', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        },
+                        body: JSON.stringify({ id: id }) /
+                    });
+
+                    const data = await response.json();
+
+                    if (data.isSuccess) {
+                        await Swal.fire('Deleted!', 'User has been deleted.', 'success');
+                        location.reload();
+                    } else {
+                        await Swal.fire('Error!', data.message || 'Failed to delete user', 'error');
+                    }
+                } catch (error) {
+                    await Swal.fire('Error!', 'An error occurred: ' + error.message, 'error');
+                }
+            }
+        }
+    </script>
+}

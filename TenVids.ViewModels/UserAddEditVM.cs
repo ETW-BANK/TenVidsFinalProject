@@ -4,7 +4,7 @@ using TenVids.ViewModels.CustomValidation;
 
 public class UserAddEditVM
 {
-    public string Id { get; set; }  // No [Required] attribute
+    public string Id { get; set; }  
 
     [Display(Name = "Name (Username)")]
     [StringCustomValidation(name: "Name", required: true, minLength: 3, maxLength: 15,

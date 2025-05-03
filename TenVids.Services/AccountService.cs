@@ -49,9 +49,10 @@ namespace TenVids.Services
                 user = await _userManager.FindByEmailAsync(loginVM.UserName);
             }
 
-            if (user == null)
+           
+            else if (user.LockoutEnabled)
             {
-                return false; 
+                return false;
             }
 
             var result = await _signInManager.PasswordSignInAsync(

@@ -33,8 +33,8 @@ namespace TenVids.Application.Controllers
                 {
                     return RedirectToAction("Index", "Home"); 
                 }
-
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+          
+                ModelState.AddModelError(string.Empty, "Your Account Is Locked  Please try Agin Later.");
             }
            
             return View(loginVM);
