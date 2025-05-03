@@ -47,17 +47,17 @@ namespace TenVids.Services
             }).ToList();
         }
 
-        public Task<Category> GetCategoryByIdAsync(int id)
+        public async Task<Category> GetCategoryByIdAsync(int id)
         {
-            var category = _unitOfWork.CategoryRepository.GetFirstOrDefaultAsync(c => c.Id == id);
+            var category = await _unitOfWork.CategoryRepository.GetFirstOrDefaultAsync(c => c.Id == id);
             if (category == null)
             {
                 throw new Exception("Category not found.");
             }
 
-
             return category;
         }
+
 
         public async Task<ErrorModel<Category>> UpdateCategoryAsync(CategoryVM model)
         {
