@@ -28,7 +28,7 @@ namespace TenVids.Services
             if (channel != null)
             {
                 model.Name = channel.Name;
-                model.Description = channel.Description;
+                model.About = channel.Description;
                 return model;
             }
             return null;
@@ -45,7 +45,7 @@ namespace TenVids.Services
             var newchannel = new Channel
             {
                 Name = model.Name,
-                Description = model.Description,
+                Description = model.About,
                 AppUserId = _httpContextAccessor.HttpContext.User.GetUserId()
             };
             _unitOfWork.ChannelRepository.Add(newchannel);
@@ -86,7 +86,7 @@ namespace TenVids.Services
             }
 
             existingChannel.Name = model.Name.Trim();
-            existingChannel.Description = model.Description.Trim();
+            existingChannel.Description = model.About.Trim();
 
             try
             {

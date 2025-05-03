@@ -127,8 +127,8 @@ namespace TenVids.Seed
                 await context.Categories.AddRangeAsync(new[] { animal, food, game, nature, news, sport });
                 await context.SaveChangesAsync();
 
-                var imagedir = new System.IO.DirectoryInfo("Seed/files/Pictures");
-                var videodir = new System.IO.DirectoryInfo("Seed/files/Videos");
+                var imagedir = new System.IO.DirectoryInfo("Seed/Files/Thumbnails");
+                var videodir = new System.IO.DirectoryInfo("Seed/Files/Videos");
 
                 System.IO.FileInfo[] imageFiles = imagedir.GetFiles();
                 System.IO.FileInfo[] videoFiles = videodir.GetFiles();

@@ -12,5 +12,7 @@ namespace TenVids.Models.DTOs
         public int Likes { get; set; }
         public int Dislikes { get; set; }
         public string CategoryName { get; set; }
+
+        public int SubscribersCount { get; set; }   
     }
 }

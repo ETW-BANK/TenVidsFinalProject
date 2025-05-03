@@ -4,17 +4,16 @@ namespace TenVids.ViewModels
 {
     public class ChannelAddEditVM
     {
-        public int Id { get; set; }
         [Required]
-        [Display(Name = "Channel Name")]
-        [RegularExpression(@"^[a-zA-Z0-9]{3,15}", ErrorMessage = "Only Alphabets and Numbers are allowed")]
+        [Display(Name = "Channel name")]
+        [RegularExpression("^[a-zA-Z]{3,15}", ErrorMessage = "Name must be between 3 and 15 characters long and can only contain letters (A-Z, a-z)")]
         public string Name { get; set; }
-        [Required]
-        [Display(Name = "Description of Your Channel")]
-        [StringLength(200, MinimumLength = 20, ErrorMessage = "Description should be atleast {2} and Maximum of 200 characters")]
-        public string Description { get; set; }
-
-        //public List<ErrorModelVM> Errors { get; set; } = new List<ErrorModelVM>();
+        [Required(ErrorMessage = "About field is required")]
+        [StringLength(200, MinimumLength = 20, ErrorMessage = "About must be at least {2}, and maximum {1} characters")]
+        [Display(Name = "About your channel")]
+        public string About { get; set; }
+        public List<ModelErrorVm> Errors { get; set; } = new List<ModelErrorVm>();
+        public int SubscribersCount { get; set; }
 
     }
 }

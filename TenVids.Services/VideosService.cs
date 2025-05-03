@@ -142,7 +142,9 @@ namespace TenVids.Services
                             Views = SD.GetRandomNumber(10000, 500000, video.Id),
                             Comments = SD.GetRandomNumber(1, 100, video.Id),
                             Likes = SD.GetRandomNumber(5, 100, video.Id),
-                            Dislikes = SD.GetRandomNumber(5, 100, video.Id)
+                            Dislikes = SD.GetRandomNumber(5, 100, video.Id),
+                            SubscribersCount = channel.Subscribers.Count()
+                           
                         };
 
             query = parameters.SortBy switch
