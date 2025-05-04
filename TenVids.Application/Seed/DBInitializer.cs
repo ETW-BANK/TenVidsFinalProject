@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -19,7 +20,7 @@ namespace TenVids.Seed
      TenVidsApplicationContext context,
      UserManager<ApplicationUser> userManager,
      RoleManager<AppRole> roleManager,
-     IPicService pictureService)
+     IPicService pictureService,IWebHostEnvironment webHostInvironment)
         {
             if (context.Database.GetPendingMigrations().Count() > 0)
             {
@@ -126,7 +127,11 @@ namespace TenVids.Seed
 
                 await context.Categories.AddRangeAsync(new[] { animal, food, game, nature, news, sport });
                 await context.SaveChangesAsync();
-
+                var folderpath = Path.Combine(webHostInvironment.WebRootPath, "image");
+                if (Directory.Exists(folderpath))
+                {
+                    Directory.Delete(folderpath,true);
+                }
                 var imagedir = new System.IO.DirectoryInfo("Seed/Files/Thumbnails");
                 var videodir = new System.IO.DirectoryInfo("Seed/Files/Videos");
 
@@ -165,9 +170,10 @@ namespace TenVids.Seed
                         CreatedAt = SD.GetRandomDate(new System.DateTime(2023, 1, 1), DateTime.UtcNow, i),
                     };
                     context.Videos.Add(videotoadd);
+
+                    await context.SaveChangesAsync();
                 }
 
-                await context.SaveChangesAsync();
             }
         }
 

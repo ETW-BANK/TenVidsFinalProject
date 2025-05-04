@@ -8,6 +8,7 @@
         IVideoFileRepository VideoFileRepository { get; }
         ICommentsRepository CommentsRepository { get; }
         IVideoViewRepository VideoViewRepository { get; }
+        ILikesRepository LikesRepository { get; }
         Task <bool> CompleteAsync();
     }
 }

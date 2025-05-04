@@ -10,6 +10,7 @@ using TenVids.Models;
 using TenVids.Service.Extensions;
 using TenVids.Utilities.FileHelpers;
 using TenVids.Seed;
+using Microsoft.AspNetCore.Hosting;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -52,9 +53,10 @@ static async Task InitializeDatabaseAsync(WebApplication app)
         var context = services.GetRequiredService<TenVidsApplicationContext>();
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
         var roleManager = services.GetRequiredService<RoleManager<AppRole>>();
-        var pictureservice = services.GetRequiredService<IPicService>();    
+        var pictureservice = services.GetRequiredService<IPicService>(); 
+        var webHostEnvironment = scope.ServiceProvider.GetService<IWebHostEnvironment>();
 
-        await DBInitializer.InitializeAsync(context, userManager, roleManager,pictureservice);
+        await DBInitializer.InitializeAsync(context, userManager, roleManager,pictureservice,webHostEnvironment);
     }
     catch (Exception ex)
     {

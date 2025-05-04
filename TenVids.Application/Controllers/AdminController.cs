@@ -124,13 +124,11 @@ namespace TenVids.Application.Controllers
             return RedirectToAction("AllUsers");
 
         }
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteUser([FromBody] DeleteUserRequest request) 
+        public async Task<IActionResult> DeleteUser([FromBody] DeleteUserRequest request)
         {
             if (string.IsNullOrEmpty(request?.Id))
             {
-                return Json(new ApiResponse(400, "Bad Request", "User ID is required"));
+                return Json(new { isSuccess = false, message = "User ID is required" });
             }
 
             try
@@ -139,16 +137,28 @@ namespace TenVids.Application.Controllers
 
                 if (result)
                 {
-                    return Json(new ApiResponse(200, "Success", $"User with ID {request.Id} has been deleted"));
+                    return Json(new
+                    {
+                        isSuccess = true,
+                        message = "User deleted successfully"
+                    });
                 }
                 else
                 {
-                    return Json(new ApiResponse(404, "Not Found", "User not found or could not be deleted"));
+                    return Json(new
+                    {
+                        isSuccess = false,
+                        message = "User not found or could not be deleted"
+                    });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new ApiResponse(500, "Error", ex.Message));
+                return Json(new
+                {
+                    isSuccess = false,
+                    message = ex.Message
+                });
             }
         }
 

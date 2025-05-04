@@ -75,9 +75,7 @@
 </div>
 
 @section Scripts {
-
     <script>
-       
         async function confirmation(message) {
             const result = await Swal.fire({
                 title: 'Are you sure?',
@@ -93,28 +91,65 @@
         }
 
         async function deleteUser(id, name) {
-            if (await confirmation('Warning: You are about to permanently delete user "' + name + '". This cannot be undone!')) {
-                try {
-                    const response = await fetch('/Admin/DeleteUser', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                        },
-                        body: JSON.stringify({ id: id }) /
-                    });
+            if (!await confirmation(`Permanently delete user "${name}"?`)) {
+                return;
+            }
 
-                    const data = await response.json();
+            const deleteBtn = document.querySelector(`a[onclick*="deleteUser('${id}'"]`);
+            if (!deleteBtn) {
+                await Swal.fire('Error!', 'Could not find user row', 'error');
+                return;
+            }
 
-                    if (data.isSuccess) {
-                        await Swal.fire('Deleted!', 'User has been deleted.', 'success');
-                        location.reload();
-                    } else {
-                        await Swal.fire('Error!', data.message || 'Failed to delete user', 'error');
-                    }
-                } catch (error) {
-                    await Swal.fire('Error!', 'An error occurred: ' + error.message, 'error');
+            try {
+                
+                const originalHtml = deleteBtn.innerHTML;
+                deleteBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                deleteBtn.classList.add('disabled');
+
+                const response = await fetch('/Admin/DeleteUser', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ id })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+
+                const data = await response.json();
+
+                if (data.isSuccess) {
+                    
+                    const row = deleteBtn.closest('tr');
+                    row.style.transition = 'opacity 0.3s ease';
+                    row.style.opacity = '0';
+
+                    
+                    await Promise.all([
+                        new Promise(resolve => setTimeout(resolve, 300)),
+                        Swal.fire({
+                            title: 'Deleted!',
+                            text: `User ${name} removed`,
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        })
+                    ]);
+
+                    
+                    row.remove();
+                } else {
+                    throw new Error(data.message || 'Deletion failed');
+                }
+            } catch (error) {
+                await Swal.fire('Error!', error.message, 'error');
+               
+                deleteBtn.innerHTML = 'Delete';
+                deleteBtn.classList.remove('disabled');
             }
         }
     </script>

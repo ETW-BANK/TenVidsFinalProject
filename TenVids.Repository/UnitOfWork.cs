@@ -19,6 +19,7 @@ namespace TenVids.Repository
         public ICategoryRepository CategoryRepository => new CategoryRepository(_context);
         public ICommentsRepository CommentsRepository => new CommentsRepository(_context);
         public IVideoViewRepository VideoViewRepository => new VideoViewRepository(_context);
+        public ILikesRepository LikesRepository => new LikesRepository(_context);   
 
         public async Task<bool> CompleteAsync()
         {

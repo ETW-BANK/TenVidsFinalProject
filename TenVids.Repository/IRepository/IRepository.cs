@@ -10,6 +10,7 @@ namespace TenVids.Repository.IRepository
         void Update(T entity);
         void UpdateAsync(T entity);
         void Remove(T item);
+        Task RemoveById(int id);
         void RemoveRange(IEnumerable<T> items);
         Task<bool> AnyAsync(Expression<Func<T, bool>> filter);
         Task<T> GetByIdAsync(int id, string includeProperties = null);

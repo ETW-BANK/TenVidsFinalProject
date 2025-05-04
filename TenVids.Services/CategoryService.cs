@@ -1,9 +1,11 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using TenVids.Data.Access.Data;
 using TenVids.Models;
 using TenVids.Repository.IRepository;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
+using TenVids.Utilities.FileHelpers;
 using TenVids.ViewModels;
 
 namespace TenVids.Services
@@ -11,10 +13,13 @@ namespace TenVids.Services
     public class CategoryService : ICategoryService
     {
         private readonly IUnitOfWork _unitOfWork;
-
-        public CategoryService(IUnitOfWork unitOfWork)
+        private readonly TenVidsApplicationContext _context;
+        private readonly IPicService _picService;   
+        public CategoryService(IUnitOfWork unitOfWork,TenVidsApplicationContext context,IPicService picService)
         {
             _unitOfWork = unitOfWork;
+            _context = context;
+            _picService = picService;
         }
 
         public async Task DeleteCategoryAsync(Category category)
@@ -25,7 +30,26 @@ namespace TenVids.Services
             {
                 throw new Exception("Category not found.");
             }
-         
+            
+            var categorywithvidsandpics=await _context.Videos.Where(v => v.CategoryId == category.Id)
+                .Select(x=>new 
+                {
+                    x.Id,
+                    x.Thumbnail,
+
+                }).ToListAsync();
+            if(categorywithvidsandpics.Any())
+            {
+                foreach (var item in categorywithvidsandpics)
+                {
+                    _picService.DeletePhotoLocally(item.Thumbnail); 
+                    await _unitOfWork.VideosRepository.RemoveById(item.Id);
+                    await _unitOfWork.CompleteAsync();
+
+                }
+
+            }
+
             _unitOfWork.CategoryRepository.Remove(category);
             await _unitOfWork.CompleteAsync();
 

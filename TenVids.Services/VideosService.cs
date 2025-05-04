@@ -22,6 +22,7 @@ namespace TenVids.Services
         private readonly IVideoViewService _videoViewService;
         private readonly IHelper _helper;
         private readonly IPicService _picservice;
+        
         public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor,  IOptions<FileUploadConfig> fileUploadConfig,IHelper helper,IVideoViewService videoViewService,IPicService picservice)
         {
             _unitOfWork = unitOfWork;
@@ -51,13 +52,13 @@ namespace TenVids.Services
         }
         public async Task<ErrorModel<Videos>> CreateEditVideoAsync(VideoVM model)
         {
-            // Null check for HttpContext
+           
             if (_httpContextAccessor?.HttpContext == null)
             {
                 return ErrorModel<Videos>.Failure("HttpContext not available", 500);
             }
 
-            // Get user channel
+         
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
             var userChannel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == userId);
 
@@ -66,7 +67,7 @@ namespace TenVids.Services
                 return ErrorModel<Videos>.Failure("No Channel Found With Your Account", 404);
             }
 
-            // Validate for new videos
+         
             if (model.Id == 0)
             {
                 var videoExists = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
@@ -110,7 +111,7 @@ namespace TenVids.Services
                     $"Video exceeds maximum size of {_fileUploadConfig.VideoMaxSizeInMB}MB",
                     400);
 
-            // Process uploaded files
+         
             var thumbnailBytes = await _helper.ProcessUploadedFiles(model.ImageUpload);
             var videoBytes = await _helper.ProcessUploadedFiles(model?.VideoUpload);
 
@@ -171,28 +172,60 @@ namespace TenVids.Services
         }
         public async Task<ErrorModel<Videos>> DeleteVideoAsync(int id)
         {
-   
             try
             {
                 var userId = _httpContextAccessor?.HttpContext?.User.GetUserId();
 
                 var existingVideo = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
-                    x => x.Id == id && x.Channel.AppUserId == userId,
-                    includeProperties: "Channel");
+                    x => x.Id == id,
+                    includeProperties: "Comments,VideoViewers,VideoFile,Likes,Channel,Channel.AppUser",
+                    tracked: true);
 
                 if (existingVideo == null)
                 {
-
-                    return ErrorModel<Videos>.Failure("Video not found or you don't have permission", 404);
+                    return ErrorModel<Videos>.Failure("Video not found", 404);
                 }
+
+               
+                if (existingVideo.Channel?.AppUser?.Id != userId)
+                {
+                    return ErrorModel<Videos>.Failure("You don't have permission to delete this video", 403);
+                }
+
+              
+                if (existingVideo.Comments?.Any() == true)
+                {
+                    _unitOfWork.CommentsRepository.RemoveRange(existingVideo.Comments);
+                }
+
+                if (existingVideo.Likes?.Any() == true)
+                {
+                _unitOfWork.LikesRepository.RemoveRange(existingVideo.Likes);   
+                }
+
+                if (existingVideo.VideoViewers?.Any() == true)
+                {
+                    _unitOfWork.VideoViewRepository.RemoveRange(existingVideo.VideoViewers);
+                }
+
+                if (existingVideo.VideoFile != null)
+                {
+                    _unitOfWork.VideoFileRepository.Remove(existingVideo.VideoFile);
+                }
+
+               
                 _picservice.DeletePhotoLocally(existingVideo.Thumbnail);
+
+               
                 _unitOfWork.VideosRepository.Remove(existingVideo);
+
                 await _unitOfWork.CompleteAsync();
                 return ErrorModel<Videos>.Success(existingVideo, $"Video '{existingVideo.Title}' deleted successfully");
             }
             catch (Exception ex)
             {
-                return ErrorModel<Videos>.Failure("An error occurred while deleting the video", 500);
+               
+                return ErrorModel<Videos>.Failure($"An error occurred while deleting the video: {ex.Message}", 500);
             }
         }
         public async Task<IEnumerable<VideoVM>> GetAllVideosAsync()
@@ -257,38 +290,39 @@ namespace TenVids.Services
             }
             return false;
         }
-        public async Task<WatchVideoVM> GetVideoToWatchAsync(int videoId)
+        public async Task<WatchVideoVM?> GetVideoToWatchAsync(int videoId)
         {
-            
             var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                 x => x.Id == videoId,
                 includeProperties: "Channel.Subscribers,Likes,Comments.AppUser,VideoViewers");
 
-            var suggestedVideos = _unitOfWork.VideosRepository.GetQueryable()
-          .Where(x => x.ChannelId == video.ChannelId && x.Id != video.Id)
-          .OrderBy(x => Guid.NewGuid()) 
-          .Take(5)
-          .ToList();
-
-
             if (video == null)
             {
-                return null; 
+                return null; // Problem 1: Return null safely as the method allows nullable return type.
             }
-            var userId = _httpContextAccessor.HttpContext.User.GetUserId();
-            var clientIpAddress = await _helper.GetClientIpAddressAsync();
-            if (clientIpAddress == null)
+
+            var suggestedVideos = _unitOfWork.VideosRepository.GetQueryable()
+                .Where(x => x.ChannelId == video.ChannelId && x.Id != video.Id)
+                .OrderBy(x => Guid.NewGuid())
+                .Take(5)
+                .ToList();
+
+            var userId = _httpContextAccessor?.HttpContext?.User?.GetUserId();
+            if (userId == null)
             {
-                clientIpAddress = "127.0.1.1";
+                userId = "Anonymous"; // Problem 2 & 3: Handle null userId gracefully.
             }
-           
-            var availableComments = video.Comments?.Select(c => new AvailableCommentsVM
+
+            var clientIpAddress = await _helper.GetClientIpAddressAsync() ?? "127.0.1.1";
+
+            var availableComments = video.Comments?.Where(c => c != null).Select(c => new AvailableCommentsVM
             {
                 Content = c.Content,
                 FormName = c.AppUser?.UserName ?? "Unknown",
                 FormChannelId = c.AppUser?.Channel?.Id ?? 0,
                 PostedAt = c.PostedAt
             }).ToList();
+
             var result = new WatchVideoVM
             {
                 Id = video.Id,
@@ -298,15 +332,14 @@ namespace TenVids.Services
                 ChannelId = video.ChannelId,
                 ChannelName = video.Channel?.Name ?? string.Empty,
 
-                IsSubscribed = video.Channel.Subscribers.Any(x => x.AppUserId == userId),
-                IsLiked = (video.Likes.Any(x => x.AppUserId == userId && x.IsLike == true)),
-                IsDisliked = (video.Likes.Any(x => x.AppUserId == userId && x.IsLike == false)),
+                IsSubscribed = video.Channel?.Subscribers?.Any(x => x.AppUserId == userId) ?? false, 
+                IsLiked = video.Likes?.Any(x => x.AppUserId == userId && x.IsLike == true) ?? false, 
+                IsDisliked = video.Likes?.Any(x => x.AppUserId == userId && x.IsLike == false) ?? false,
 
-
-                SubscribersCount = video.Channel.Subscribers.Count(),
-                ViewsCount = video.VideoViewers.Select(x => x.NumberOfVisits).Sum(),
-                LikesCount = (video.Likes.Where(x => x.IsLike == true).Count()),
-                DislikesCount = (video.Likes.Where(x => x.IsLike == false).Count()),
+                SubscribersCount = video.Channel?.Subscribers?.Count() ?? 0,
+                ViewsCount = video.VideoViewers?.Select(x => x.NumberOfVisits).Sum() ?? 0, 
+                LikesCount = video.Likes?.Count(x => x.IsLike == true) ?? 0,
+                DislikesCount = video.Likes?.Count(x => x.IsLike == false) ?? 0,
 
                 CommentVM = new CommentsVM
                 {
@@ -315,23 +348,23 @@ namespace TenVids.Services
                         VideoId = video.Id,
                         Content = string.Empty
                     },
-                    AvailableComments = video.Comments?.Select(c => new AvailableCommentsVM
+                    AvailableComments = video.Comments?.Where(c => c != null).Select(c => new AvailableCommentsVM
                     {
                         Content = c.Content,
                         FormName = c.AppUser?.UserName ?? "Unknown",
-                        FormChannelId = _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == c.AppUserId).Result.Id,
+                        FormChannelId = _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == c.AppUserId).Result?.Id ?? 0,
                         PostedAt = c.PostedAt
                     }).ToList()
                 },
                 SuggestedVideos = suggestedVideos
-
             };
-            await _videoViewService.HandleVideoViewAsync(userId, videoId, clientIpAddress);
+
+            await _videoViewService.HandleVideoViewAsync(userId, videoId, clientIpAddress); 
             await _unitOfWork.CompleteAsync();
             return result;
         }
 
-     
+
 
         public async Task<ErrorModel<string>> LikeVideo(int videoId, string action, bool like)
         {

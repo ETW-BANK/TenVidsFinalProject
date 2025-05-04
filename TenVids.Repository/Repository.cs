@@ -108,7 +108,14 @@ namespace TenVids.Repository
 
             return await query.Where(filter).FirstOrDefaultAsync(); 
         }
-
+        public async Task RemoveById(int id)
+        {
+            var entity = await _dbSet.FindAsync(id);
+            if (entity != null)
+            {
+                _dbSet.Remove(entity);
+            }
+        }
         public void Remove(T item)
         {
             _context.Remove(item);
@@ -142,6 +149,8 @@ namespace TenVids.Repository
             }
             return query;
         }
+
+     
 
 
         #endregion

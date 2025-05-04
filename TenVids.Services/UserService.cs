@@ -1,8 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using TenVids.Data.Access.Data;
 using TenVids.Models;
+using TenVids.Repository.IRepository;
 using TenVids.Services.IServices;
+using TenVids.Utilities.FileHelpers;
 using TenVids.ViewModels;
 
 namespace TenVids.Services
@@ -12,12 +15,18 @@ namespace TenVids.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<AppRole> _roleManager;
         private readonly IMapper _mapper;
+        private readonly TenVidsApplicationContext _context;
+        private readonly IPicService _picService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UserService(UserManager<ApplicationUser> userManager,RoleManager<AppRole> roleManager,IMapper mapper)
+        public UserService(UserManager<ApplicationUser> userManager,RoleManager<AppRole> roleManager,IMapper mapper,TenVidsApplicationContext context,IPicService picService,IUnitOfWork unitOfWork)
         {
             _roleManager = roleManager;
             _userManager = userManager;
             _mapper = mapper;
+            _context = context;
+            _picService = picService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<UserAddEditVM> AddUserAsync(string id)
@@ -183,12 +192,51 @@ namespace TenVids.Services
             if (string.IsNullOrEmpty(id))
                 return false;
 
-            var user = await _userManager.FindByIdAsync(id); 
-            if (user == null)
-                return false;
+            try
+            {
+                
+                var user = await _userManager.FindByIdAsync(id);
+                if (user == null)
+                {
+                    return false; 
+                }
 
-            var result = await _userManager.DeleteAsync(user);
-            return result.Succeeded;
+                
+                var channel = await _context.Channels
+                    .Include(c => c.Videos)
+                    .FirstOrDefaultAsync(c => c.AppUserId == id);
+
+                if (channel != null)
+                {
+                   
+                    foreach (var video in channel.Videos)
+                    {
+                        _picService.DeletePhotoLocally(video.Thumbnail);
+                    }
+
+                  
+                    _context.Videos.RemoveRange(channel.Videos);
+                    await _context.SaveChangesAsync();
+
+                 
+                    _context.Channels.Remove(channel);
+                    await _context.SaveChangesAsync();
+                }
+
+                
+                var result = await _userManager.DeleteAsync(user);
+                return result.Succeeded;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                
+                return false;
+            }
+            catch (Exception ex)
+            {
+               
+                return false;
+            }
         }
     }
 }
