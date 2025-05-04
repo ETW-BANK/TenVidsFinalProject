@@ -20,7 +20,6 @@ namespace TenVids.Services
             _httpContextAccessor = httpContextAccessor;
          
         }
-
         public async Task<ChannelAddEditVM> GetUserChannelAsync()
         {
             var model=new ChannelAddEditVM();   
