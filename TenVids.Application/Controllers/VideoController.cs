@@ -71,7 +71,8 @@ namespace TenVids.Application.Controllers
             TempData["success"] = result.Message;
              return RedirectToAction("Index", "Channel");
         }
-       
+
+        [AllowAnonymous]
         public async Task<IActionResult> WatchVideos(int id)
         {
             var result=await _videosService.GetVideoToWatchAsync(id);
@@ -219,6 +220,7 @@ namespace TenVids.Application.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> LikeVideo(int videoId, string action,bool like)
         {
             var result = await _videosService.LikeVideo(videoId, action,like);

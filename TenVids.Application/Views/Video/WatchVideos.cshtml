@@ -25,9 +25,9 @@
 
             <div class="action-buttons">
 
-                @if (!User.Identity.IsAuthenticated)
+                 @if (!User.Identity.IsAuthenticated)
                 {
-                    <div class="like-dislike-container" hidden>
+                    <div class="like-dislike-container" hidden >
 
                         <div class="like-section @(Model.IsLiked ? "active" : "")" id="likeBtn" onclick="likeDislike('likeBtn', 'like')">
                             <i class="bi bi-hand-thumbs-up-fill"></i>
@@ -40,7 +40,7 @@
                     </div>
                 }
                 else
-                {
+                { 
                     <div class="like-dislike-container" >
 
                         <div class="like-section @(Model.IsLiked ? "active" : "")" id="likeBtn" onclick="likeDislike('likeBtn', 'like')">
@@ -52,7 +52,7 @@
                             <span>@SD.FormatView(Model.DislikesCount)</span>
                         </div>
                     </div>
-                }
+                } 
 
 
                 <form method="post">
@@ -72,16 +72,10 @@
 
                 
             </div>
-            @if (!User.Identity.IsAuthenticated)
-            {
-                <button id="subscribeBtn" disabled class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
-                    @(Model.IsSubscribed ? "Subscribed ✓" : "Login To Subscribe")
-                </button>
-            }else{
+       
                 <button id="subscribeBtn" class="btn @(Model.IsSubscribed ? "btn-success" : "btn-danger")">
                     @(Model.IsSubscribed ? "Subscribed ✓" : "Subscribe")
                 </button>
-            }
            
         </div>
 
