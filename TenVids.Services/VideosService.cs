@@ -11,6 +11,7 @@ using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using TenVids.Services.HelperMethods;
 using TenVids.Utilities.FileHelpers;
+using AutoMapper;
 
 namespace TenVids.Services
 {
@@ -22,15 +23,17 @@ namespace TenVids.Services
         private readonly IVideoViewService _videoViewService;
         private readonly IHelper _helper;
         private readonly IPicService _picservice;
+        private readonly IMapper _mapper;
         
-        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor,  IOptions<FileUploadConfig> fileUploadConfig,IHelper helper,IVideoViewService videoViewService,IPicService picservice)
+        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor,  IOptions<FileUploadConfig> fileUploadConfig,IHelper helper,IVideoViewService videoViewService,IPicService picservice,IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _fileUploadConfig = fileUploadConfig.Value;
             _helper = helper;
             _videoViewService = videoViewService;
-            _picservice= picservice;    
+            _picservice= picservice;
+            _mapper = mapper;
 
         }
         public async Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters)
@@ -587,7 +590,21 @@ namespace TenVids.Services
             throw new NotImplementedException();
         }
 
-       
+        public async Task<ErrorModel<List<VideoDisplayVm>>> AllVideos()
+        {
+            var result= await _unitOfWork.VideosRepository.GetAllAsync(
+                               includeProperties: "Category,Channel",
+                                              orderby: _helper.GetOrderByExpression("date-d"));
+            var vidios=_mapper.Map<IEnumerable<VideoDisplayVm>>(result);
+            if (vidios != null)
+            {
+                return ErrorModel<List<VideoDisplayVm>>.Success(vidios.ToList(), "Videos retrieved successfully");
+            }
+            else
+            {
+                return ErrorModel<List<VideoDisplayVm>>.Failure("No videos found", 404);
+            }
+        }
     }
 
 }
