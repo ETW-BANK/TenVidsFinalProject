@@ -160,8 +160,6 @@ namespace TenVids.Application.Controllers
 
 
 
-
-
         #region API CALLS
         [HttpGet]
         public async Task<IActionResult>GetVideosForChannelGrid(BaseParams parameters)
