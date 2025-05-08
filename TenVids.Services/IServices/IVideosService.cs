@@ -29,6 +29,7 @@ namespace TenVids.Services.IServices
 
         Task<ErrorModel<string>> LikeVideo(int videoId, string action, bool like);
         Task<ErrorModel<IEnumerable<VideoDisplayVm>>> AllVideos();
+        Task<ErrorModel<VideoDisplayVm>> DeleteVideos(int Id);
 
     }
 }

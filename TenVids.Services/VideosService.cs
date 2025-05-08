@@ -605,6 +605,38 @@ namespace TenVids.Services
                 return ErrorModel<IEnumerable<VideoDisplayVm>>.Failure("No videos found", 404);
             }
         }
+
+        public async Task<ErrorModel<VideoDisplayVm>> DeleteVideos(int id)
+        {
+            var video = await _unitOfWork.VideosRepository.GetQueryable()
+                .Where(x => x.Id == id)
+                .Select(x => new { x.Id, x.Title, x.Thumbnail })
+                .FirstOrDefaultAsync();
+
+            if (video == null)
+            {
+                return ErrorModel<VideoDisplayVm>.Failure("Video not found", 404);
+            }
+
+       
+            _picservice.DeletePhotoLocally(video.Thumbnail);
+
+         
+            var entity = await _unitOfWork.VideosRepository.GetByIdAsync(video.Id);
+            if (entity != null)
+            {
+                _unitOfWork.VideosRepository.Remove(entity);
+                await _unitOfWork.CompleteAsync();
+            }
+
+            return ErrorModel<VideoDisplayVm>.Success(new VideoDisplayVm
+            {
+                Id = video.Id,
+                Title = video.Title,
+                Thumbnailurl = video.Thumbnail
+            }, "Video deleted successfully");
+        }
+
     }
 
 }

@@ -30,6 +30,20 @@ namespace TenVids.Application.Controllers
             ViewBag.ErrorMessage = result.Message;
             return View(new List<VideoDisplayVm>()); 
         }
+        public async Task<IActionResult> DeleteVideo(int id)
+        {
+            var result = await _videosService.DeleteVideos(id);
+
+            if (result.IsSuccess)
+            {
+                TempData["notification"] = "true;Video Deleted; Video Deleted Successfully";
+                return RedirectToAction("AllVideos");   
+
+            }
+
+            ViewBag.ErrorMessage = result.Message;
+            return View(new List<VideoDisplayVm>());
+        }
 
     }
 }
