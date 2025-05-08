@@ -36,13 +36,13 @@ namespace TenVids.Application.Controllers
 
             if (result.IsSuccess)
             {
-                TempData["notification"] = "true;Video Deleted; Video Deleted Successfully";
+                TempData["success"] = "Video Deleted Successfully";
                 return RedirectToAction("AllVideos");   
 
             }
 
-            ViewBag.ErrorMessage = result.Message;
-            return View(new List<VideoDisplayVm>());
+            TempData["error"] = "Video Not Found";
+            return RedirectToAction("AllVideos");
         }
 
     }
