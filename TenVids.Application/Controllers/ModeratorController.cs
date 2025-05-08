@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
+using TenVids.ViewModels;
 
 namespace TenVids.Application.Controllers
 {
@@ -17,10 +19,17 @@ namespace TenVids.Application.Controllers
         }
         public async Task<IActionResult> AllVideos()
         {
-
             var result = await _videosService.AllVideos();
 
-            return View(result);
+            if (result.IsSuccess)
+            {
+                return View(result.Data); 
+            }
+
+       
+            ViewBag.ErrorMessage = result.Message;
+            return View(new List<VideoDisplayVm>()); 
         }
+
     }
 }

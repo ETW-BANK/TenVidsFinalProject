@@ -590,7 +590,7 @@ namespace TenVids.Services
             throw new NotImplementedException();
         }
 
-        public async Task<ErrorModel<List<VideoDisplayVm>>> AllVideos()
+        public async Task<ErrorModel<IEnumerable<VideoDisplayVm>>> AllVideos()
         {
             var result= await _unitOfWork.VideosRepository.GetAllAsync(
                                includeProperties: "Category,Channel",
@@ -598,11 +598,11 @@ namespace TenVids.Services
             var vidios=_mapper.Map<IEnumerable<VideoDisplayVm>>(result);
             if (vidios != null)
             {
-                return ErrorModel<List<VideoDisplayVm>>.Success(vidios.ToList(), "Videos retrieved successfully");
+                return ErrorModel<IEnumerable<VideoDisplayVm>>.Success(vidios.ToList(), "Videos retrieved successfully");
             }
             else
             {
-                return ErrorModel<List<VideoDisplayVm>>.Failure("No videos found", 404);
+                return ErrorModel<IEnumerable<VideoDisplayVm>>.Failure("No videos found", 404);
             }
         }
     }
