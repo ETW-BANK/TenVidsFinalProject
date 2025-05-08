@@ -23,7 +23,7 @@
                                 <a asp-controller="Video" asp-action="Watch" asp-route-id="@item.Id" class="text-dark">
                                     @item.Title
                                 </a>
-                                <img src="@item.ThumbnailUrl" class="card-img-top rounded preview-image" />
+                                <img src="@item.Thumbnailurl" class="card-img-top rounded preview-image" />
                             </td>
                             <td>
                                 <a asp-controller="Member" asp-action="Channel" asp-route-id="@item.ChannelId" class="text-dark">
