@@ -85,8 +85,21 @@ namespace TenVids.Application.Controllers
 
             return View(result);
         }
+        [Authorize]
+        public async Task<IActionResult> WatchVideosModerator(int id)
+        {
+            var result = await _videosService.GetVideoToWatchAsync(id);
 
-       [AllowAnonymous]
+            if (result == null)
+            {
+                TempData["error"] = "Video not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(result);
+        }
+
+        [AllowAnonymous]
         public async Task<IActionResult> GetVideoFile(int? videoId)
         {
             try
