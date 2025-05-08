@@ -39,10 +39,7 @@ namespace TenVids.Services
         public async Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters)
         {
             var userid = _httpContextAccessor?.HttpContext?.User.GetUserId();   
-            //if(userid==null)
-            //{
-            //    throw new UnauthorizedAccessException("User not authenticated");
-            //}
+         
             var paginatedList = await _helper.GetVideos(parameters);
 
             return new PaginatedResult<VideoForHomeDto>(

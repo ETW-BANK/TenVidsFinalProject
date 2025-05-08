@@ -50,7 +50,7 @@ namespace TenVids.Application.Controllers
             }
         }
         [HttpPost]
-        [ValidateAntiForgeryToken]
+ 
         public async Task<IActionResult> Upsert(VideoVM videoVM)
         {
             if (!ModelState.IsValid)
