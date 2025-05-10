@@ -52,13 +52,11 @@ namespace TenVids.Services
         }
         public async Task<ErrorModel<Videos>> CreateEditVideoAsync(VideoVM model)
         {
-           
             if (_httpContextAccessor?.HttpContext == null)
             {
                 return ErrorModel<Videos>.Failure("HttpContext not available", 500);
             }
 
-         
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
             var userChannel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == userId);
 
@@ -67,8 +65,9 @@ namespace TenVids.Services
                 return ErrorModel<Videos>.Failure("No Channel Found With Your Account", 404);
             }
 
-         
-            if (model.Id == 0)
+            bool isCreating = model.Id == 0;
+
+            if (isCreating)
             {
                 var videoExists = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                     x => x.Title == model.Title && x.ChannelId == userChannel.Id);
@@ -77,46 +76,49 @@ namespace TenVids.Services
                 {
                     return ErrorModel<Videos>.Failure("Video with this title already exists", 409);
                 }
+
+                if (model.ImageUpload == null)
+                    return ErrorModel<Videos>.Failure("Image thumbnail is required", 400);
+
+                if (!_helper.IsAcceptableContentType("image", model.ImageUpload.ContentType))
+                {
+                    var allowedTypes = _helper.AcceptableContentTypes("image");
+                    return ErrorModel<Videos>.Failure(
+                        $"Invalid image type. Allowed: {string.Join(", ", allowedTypes)}",
+                        400);
+                }
+
+                if (model.ImageUpload.Length > _fileUploadConfig.ImageMaxSizeInMB * SD.fileSizeLimit)
+                    return ErrorModel<Videos>.Failure(
+                        $"Image exceeds maximum size of {_fileUploadConfig.ImageMaxSizeInMB}MB",
+                        400);
+
+                if (model.VideoUpload == null)
+                    return ErrorModel<Videos>.Failure("Video file is required", 400);
+
+                if (!_helper.IsAcceptableContentType("video", model.VideoUpload.ContentType))
+                {
+                    var allowedTypes = _helper.AcceptableContentTypes("video");
+                    return ErrorModel<Videos>.Failure(
+                        $"Invalid video type. Allowed: {string.Join(", ", allowedTypes)}",
+                        400);
+                }
+
+                if (model.VideoUpload.Length > _fileUploadConfig.VideoMaxSizeInMB * SD.fileSizeLimit)
+                    return ErrorModel<Videos>.Failure(
+                        $"Video exceeds maximum size of {_fileUploadConfig.VideoMaxSizeInMB}MB",
+                        400);
             }
 
-            if (model.ImageUpload == null)
-                return ErrorModel<Videos>.Failure("Image thumbnail is required", 400);
+            byte[] thumbnailBytes = model.ImageUpload != null
+                ? await _helper.ProcessUploadedFiles(model.ImageUpload)
+                : null;
 
-            if (!_helper.IsAcceptableContentType("image", model.ImageUpload.ContentType))
-            {
-                var allowedTypes =_helper.AcceptableContentTypes("image");
-                return ErrorModel<Videos>.Failure(
-                    $"Invalid image type. Allowed: {string.Join(", ", allowedTypes)}",
-                    400);
-            }
+            byte[] videoBytes = model.VideoUpload != null
+                ? await _helper.ProcessUploadedFiles(model.VideoUpload)
+                : null;
 
-            if (model.ImageUpload.Length > _fileUploadConfig.ImageMaxSizeInMB * SD.fileSizeLimit)
-                return ErrorModel<Videos>.Failure(
-                    $"Image exceeds maximum size of {_fileUploadConfig.ImageMaxSizeInMB}MB",
-                    400);
-
-            if (model.VideoUpload == null)
-                return ErrorModel<Videos>.Failure("Video file is required", 400);
-
-            if (!_helper.IsAcceptableContentType("video", model.VideoUpload.ContentType))
-            {
-                var allowedTypes = _helper.AcceptableContentTypes("video");
-                return ErrorModel<Videos>.Failure(
-                    $"Invalid video type. Allowed: {string.Join(", ", allowedTypes)}",
-                    400);
-            }
-
-            if (model.VideoUpload.Length > _fileUploadConfig.VideoMaxSizeInMB * SD.fileSizeLimit)
-                return ErrorModel<Videos>.Failure(
-                    $"Video exceeds maximum size of {_fileUploadConfig.VideoMaxSizeInMB}MB",
-                    400);
-
-         
-            var thumbnailBytes = await _helper.ProcessUploadedFiles(model.ImageUpload);
-            var videoBytes = await _helper.ProcessUploadedFiles(model?.VideoUpload);
-
-
-            if (model.Id == 0)
+            if (isCreating)
             {
                 return await _helper.CreateNewVideos(model, userChannel.Id, thumbnailBytes, videoBytes);
             }
@@ -125,6 +127,7 @@ namespace TenVids.Services
                 return await _helper.UpdateExistingVideo(model, thumbnailBytes, videoBytes);
             }
         }
+
         public async Task<PaginatedResult<VideoGridChannelDto>> GetVideosForChannelAsync(BaseParams parameters)
         {
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();

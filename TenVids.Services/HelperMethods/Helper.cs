@@ -183,13 +183,13 @@ namespace TenVids.Services.HelperMethods
             return ErrorModel<Videos>.Success(newVideo, "Video created successfully");
         }
 
-       public async Task<ErrorModel<Videos>> UpdateExistingVideo(
-            VideoVM model, byte[] thumbnailBytes, byte[] videoBytes)
+        public async Task<ErrorModel<Videos>> UpdateExistingVideo(
+        VideoVM model, byte[] thumbnailBytes, byte[] videoBytes)
         {
             var existingVideo = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
             if (existingVideo == null)
                 return ErrorModel<Videos>.Failure("Video not found", 404);
-            existingVideo.Id = model.Id;
+
             existingVideo.Title = model.Title;
             existingVideo.Description = model.Description;
             existingVideo.CategoryId = model.CategoryId;
@@ -198,21 +198,28 @@ namespace TenVids.Services.HelperMethods
             {
                 existingVideo.Thumbnail = _picService.UploadPics(model.ImageUpload);
             }
-            else
+            else if (!string.IsNullOrEmpty(model.ImageUrl))
             {
+               
                 existingVideo.Thumbnail = model.ImageUrl;
             }
-            if (model.VideoUpload != null)
+          
+            if (model.VideoUpload != null && videoBytes?.Length > 0)
             {
+                if (existingVideo.VideoFile == null)
+                    existingVideo.VideoFile = new VideoFiles();
 
                 existingVideo.VideoFile.ContentType = model.VideoUpload.ContentType;
                 existingVideo.VideoFile.Contents = videoBytes;
             }
+          
 
             _unitOfWork.VideosRepository.UpdateAsync(existingVideo);
             await _unitOfWork.CompleteAsync();
+
             return ErrorModel<Videos>.Success(existingVideo, "Video updated successfully");
         }
+
 
 
         public async Task<VideoViews> AddVideoViewAsync(string userId, int videoId, string ipAddress)
