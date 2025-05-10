@@ -50,7 +50,7 @@ namespace TenVids.Application.Controllers
             }
         }
         [HttpPost]
- 
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Upsert(VideoVM videoVM)
         {
             if (!ModelState.IsValid)
@@ -69,8 +69,10 @@ namespace TenVids.Application.Controllers
             }
 
             TempData["success"] = result.Message;
-             return RedirectToAction("Index", "Channel");
+            return RedirectToAction("Index", "Channel");
         }
+
+
 
         [AllowAnonymous]
         public async Task<IActionResult> WatchVideos(int id)

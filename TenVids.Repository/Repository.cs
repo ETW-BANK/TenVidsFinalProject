@@ -97,17 +97,19 @@ namespace TenVids.Repository
             return await query.Where(x => x.Id == id).FirstOrDefaultAsync();    
         }
 
-        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = false)
+        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> filter,
+     string? includeProperties = null, bool tracked = false)
         {
             IQueryable<T> query = tracked ? _dbSet : _dbSet.AsNoTracking();
 
             if (!string.IsNullOrEmpty(includeProperties))
             {
-               query=GetWithProperties(query, includeProperties);
+                query = GetWithProperties(query, includeProperties);
             }
 
-            return await query.Where(filter).FirstOrDefaultAsync(); 
+            return await query.Where(filter).FirstOrDefaultAsync();
         }
+
         public async Task RemoveById(int id)
         {
             var entity = await _dbSet.FindAsync(id);
