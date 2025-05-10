@@ -1,5 +1,4 @@
-﻿using Xunit;
-using Moq;
+﻿using Moq;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -8,17 +7,12 @@ using TenVids.Repository.IRepository;
 using TenVids.Utilities;
 using TenVids.Services.HelperMethods;
 using TenVids.Services.IServices;
-using TenVids.ViewModels;
 using TenVids.Models.DTOs;
 using AutoMapper;
 using System.Security.Claims;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
 using TenVids.Models.Pagination;
 using TenVids.Utilities.FileHelpers;
-using System.Linq.Expressions;
-using TenVids.Models;
+
 
 public class VideosServiceTests
 {

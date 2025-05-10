@@ -14,9 +14,9 @@ namespace TenVids.Services.IServices
         Task<VideoVM> GetVideoByIdAsync(int? id);
         Task<bool> UserHasChannelAsync();
         Task<ErrorModel<Videos>> CreateEditVideoAsync(VideoVM model);
-        Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model);
+       
         Task<ErrorModel<Videos>> DeleteVideoAsync(int id);
-        Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId);
+      
         Task<List<object>> GetVideosByChannelIdAsync(int channelId);
 
         Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters);

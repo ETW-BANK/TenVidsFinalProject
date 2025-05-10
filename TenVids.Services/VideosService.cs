@@ -67,7 +67,7 @@ namespace TenVids.Services
                 return ErrorModel<Videos>.Failure("No Channel Found With Your Account", 404);
             }
 
-            // Validate for new videos
+           
             if (model.Id == 0)
             {
                 var videoExists = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
@@ -299,7 +299,7 @@ namespace TenVids.Services
 
             if (video == null)
             {
-                return null; // Problem 1: Return null safely as the method allows nullable return type.
+                return null; 
             }
 
             var suggestedVideos = _unitOfWork.VideosRepository.GetQueryable()
@@ -311,7 +311,7 @@ namespace TenVids.Services
             var userId = _httpContextAccessor?.HttpContext?.User?.GetUserId();
             if (userId == null)
             {
-                userId = "Anonymous"; // Problem 2 & 3: Handle null userId gracefully.
+                userId = "Anonymous"; 
             }
 
             var clientIpAddress = await _helper.GetClientIpAddressAsync() ?? "127.0.1.1";
@@ -543,49 +543,6 @@ namespace TenVids.Services
                 .ToListAsync();
 
             return videos.Cast<object>().ToList();
-        }
-        //public async Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
-        //{
-        //    var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
-        //    if (video == null)
-        //    {
-        //        return ErrorModel<Videos>.Failure("Video not found", 404);
-        //    }
-
-        //    video.Title = model.Title;
-        //    video.Description = model.Description;
-        //    video.CategoryId = model.CategoryId;
-
-        //    if (model.ImageUpload != null)
-        //    {
-        //        video.Thumbnail = _picService.UploadPics(model.ImageUpload);
-        //    }
-        //    else
-        //    {
-        //        video.Thumbnail = model.ImageUrl;
-        //    }
-
-        //    if (model.VideoUpload != null)
-        //    {
-        //        video.VideoFile.ContentType = model.VideoUpload.ContentType;
-        //        video.VideoFile.Contents = await ProcessUploadedFiles(model.VideoUpload);
-        //    }
-
-        //    _unitOfWork.VideosRepository.Update(video);
-        //    await _unitOfWork.CompleteAsync();
-
-        //    return ErrorModel<Videos>.Success(video, "Video updated successfully");
-        //}
-        public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
-        {
-            throw new NotImplementedException();
-        }
-
-     
-
-        public Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
-        {
-            throw new NotImplementedException();
         }
 
         public async Task<ErrorModel<IEnumerable<VideoDisplayVm>>> AllVideos()
