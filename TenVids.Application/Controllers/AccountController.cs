@@ -21,7 +21,6 @@ namespace TenVids.Application.Controllers
 
             return View(url);
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginVM loginVM)
@@ -29,16 +28,19 @@ namespace TenVids.Application.Controllers
             if (ModelState.IsValid)
             {
                 var loginResult = await _accountService.LoginAsync(loginVM);
-                if (loginResult)
+
+                if (loginResult.IsSuccess)
                 {
-                    return RedirectToAction("Index", "Home"); 
+                    return RedirectToAction("Index", "Home");
                 }
-          
-                ModelState.AddModelError(string.Empty, "Your Account Is Locked  Please try Agin Later.");
+
+                ModelState.AddModelError(string.Empty, loginResult.Message ?? "Login failed.");
             }
-           
+
             return View(loginVM);
         }
+
+
 
         [HttpGet]
         public  IActionResult Register()

@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
+using TenVids.Utilities;
 using TenVids.ViewModels;
 
 namespace TenVids.Services.IServices
@@ -8,7 +9,7 @@ namespace TenVids.Services.IServices
     {
         Task<LoginVM> Login(string returnUrl);
 
-        Task<bool> LoginAsync(LoginVM loginVM);
+        Task<ErrorModel<bool>> LoginAsync(LoginVM loginVM);
 
         Task Register(RegisterVM registerVM);
         Task LogoutAsync();
