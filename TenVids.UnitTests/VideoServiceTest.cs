@@ -12,6 +12,9 @@ using AutoMapper;
 using System.Security.Claims;
 using TenVids.Models.Pagination;
 using TenVids.Utilities.FileHelpers;
+using System.Linq.Expressions;
+using TenVids.Models;
+using TenVids.ViewModels;
 
 
 public class VideosServiceTests
@@ -130,5 +133,109 @@ public class VideosServiceTests
         // Assert
         result.Items.Should().BeEmpty();
         result.TotalCount.Should().Be(0);
+    }
+    [Fact]
+    public async Task CreateEditVideoAsync_ShouldReturnError_WhenVideoExists()
+    {
+        // Arrange
+        var videoVm = new VideoVM
+        {
+            Title = "Existing Video",
+            ImageUpload = new FormFile(Stream.Null, 0, 1024, "thumb", "thumb.jpg"),
+            VideoUpload = new FormFile(Stream.Null, 0, 1024 * 1024, "video", "video.mp4")
+        };
+
+        var existingVideo = new Videos { Title = "Existing Video" };
+        var userChannel = new Channel { Id = 1, AppUserId = "test-user-id" };
+     
+        _unitOfWorkMock.Setup(uow => uow.VideosRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<Videos, bool>>>(),
+            null, false))
+            .ReturnsAsync(existingVideo);
+
+        _unitOfWorkMock.Setup(uow => uow.ChannelRepository.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<Channel, bool>>>(),
+            null, false))
+            .ReturnsAsync(userChannel);
+
+        _helperMock.Setup(h => h.IsAcceptableContentType("image", It.IsAny<string>()))
+                  .Returns(true);
+        _helperMock.Setup(h => h.IsAcceptableContentType("video", It.IsAny<string>()))
+                  .Returns(true);
+
+        // Act
+        var result = await _videosService.CreateEditVideoAsync(videoVm);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Message.Should().Contain("already exists");
+    }
+    [Fact]
+    public async Task CreateEditVideoAsync_ShouldUpdateVideo_WhenExistingId()
+    {
+        // Arrange
+        var userId = "test-user-id";
+        var videoVm = new VideoVM
+        {
+            Id = 1,
+            Title = "Updated Video",
+            Description = "Updated Description",
+            ImageUpload = new FormFile(Stream.Null, 0, 1024, "thumb.jpg", "thumb.jpg")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "image/jpeg"
+            },
+            VideoUpload = new FormFile(Stream.Null, 0, 1024 * 1024, "video.mp4", "video.mp4")
+            {
+                Headers = new HeaderDictionary(),
+                ContentType = "video/mp4"
+            }
+        };
+
+        var existingVideo = new Videos { Id = 1 };
+        var userChannel = new Channel { Id = 1, AppUserId = userId };
+        var thumbnailBytes = new byte[] { 0x01, 0x02 };
+        var videoBytes = new byte[] { 0x03, 0x04 };
+
+       
+        var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+        new Claim(ClaimTypes.NameIdentifier, userId)
+    }));
+        _httpContextAccessorMock.Setup(x => x.HttpContext!.User)
+                              .Returns(claimsPrincipal);
+
+    
+        _unitOfWorkMock.Setup(uow => uow.ChannelRepository.GetFirstOrDefaultAsync(
+            c => c.AppUserId == userId,
+            null, false))
+            .ReturnsAsync(userChannel);
+
+        _helperMock.Setup(h => h.IsAcceptableContentType("image", videoVm.ImageUpload.ContentType))
+                  .Returns(true);
+        _helperMock.Setup(h => h.IsAcceptableContentType("video", videoVm.VideoUpload.ContentType))
+                  .Returns(true);
+        _helperMock.Setup(h => h.ProcessUploadedFiles(videoVm.ImageUpload))
+                  .ReturnsAsync(thumbnailBytes);
+        _helperMock.Setup(h => h.ProcessUploadedFiles(videoVm.VideoUpload))
+                  .ReturnsAsync(videoBytes);
+        _helperMock.Setup(h => h.UpdateExistingVideo(
+            It.Is<VideoVM>(vm => vm.Id == 1),
+            thumbnailBytes,
+            videoBytes))
+            .ReturnsAsync(ErrorModel<Videos>.Success(existingVideo));
+
+        // Act
+        var result = await _videosService.CreateEditVideoAsync(videoVm);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.IsSuccess.Should().BeTrue();
+        result.Data.Id.Should().Be(1);
+
+        _helperMock.Verify(h => h.UpdateExistingVideo(
+            It.Is<VideoVM>(vm => vm.Id == 1),
+            thumbnailBytes,
+            videoBytes), Times.Once);
     }
 }
