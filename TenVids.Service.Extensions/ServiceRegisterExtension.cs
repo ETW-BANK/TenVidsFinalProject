@@ -42,7 +42,6 @@ namespace TenVids.Service.Extensions
             services.AddScoped<IMembersService, MembersService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IHomeService,HomeService>();
-           services.AddScoped<IVideoViewService, VideoViewService>();
             services.Configure<FileUploadConfig>(configuration.GetSection("FileUpload"));
             services.AddHttpContextAccessor();
             services.AddSession();

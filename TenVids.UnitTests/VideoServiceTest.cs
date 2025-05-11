@@ -22,7 +22,7 @@ public class VideosServiceTests
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;
     private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
     private readonly Mock<IHelper> _helperMock;
-    private readonly Mock<IVideoViewService> _videoViewServiceMock;
+  
     private readonly Mock<IPicService> _picServiceMock;
     private readonly Mock<IMapper> _mapperMock;
     private readonly VideosService _videosService;
@@ -32,7 +32,7 @@ public class VideosServiceTests
         _unitOfWorkMock = new Mock<IUnitOfWork>();
         _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
         _helperMock = new Mock<IHelper>();
-        _videoViewServiceMock = new Mock<IVideoViewService>();
+       
         _picServiceMock = new Mock<IPicService>();
         _mapperMock = new Mock<IMapper>();
 
@@ -54,7 +54,7 @@ public class VideosServiceTests
             _httpContextAccessorMock.Object,
             fileUploadOptions,
             _helperMock.Object,
-            _videoViewServiceMock.Object,
+           
             _picServiceMock.Object,
             _mapperMock.Object
         );
