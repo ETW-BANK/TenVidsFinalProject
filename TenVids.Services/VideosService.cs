@@ -142,8 +142,8 @@ namespace TenVids.Services
                             CategoryName = video.Category.Name,
                             Views = video.VideoViewers.Count(),
                             Comments =video.Comments.Count(),
-                            Likes = video.Likes.Count(),
-                            Dislikes = video.Likes.Count(x => x.IsLike == false),   
+                            Likes = video.Likes.Where(l=>l.IsLike==true).Count(),
+                            Dislikes = video.Likes.Where(l => l.IsLike == false).Count(),
                             SubscribersCount = channel.Subscribers.Count()
                            
                         };
