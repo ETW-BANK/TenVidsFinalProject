@@ -13,7 +13,7 @@ using TenVids.Services.HelperMethods;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.Utilities.FileHelpers;
-using TenVids.Utilities.Mapper;
+
 
 namespace TenVids.Service.Extensions
 {
@@ -42,7 +42,6 @@ namespace TenVids.Service.Extensions
             services.AddScoped<IMembersService, MembersService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IHomeService,HomeService>();
-           services.AddScoped<IVideoViewService, VideoViewService>();
             services.Configure<FileUploadConfig>(configuration.GetSection("FileUpload"));
             services.AddHttpContextAccessor();
             services.AddSession();

@@ -11,7 +11,7 @@ namespace TenVids.Utilities
         public const string UserRole = "User";
         public static readonly List<string> Roles = new List<string> { AdminRole, ModeratorRole, UserRole };
         public const int fileSizeLimit = 10485760; // 10 MB
-        public static readonly List<string> LocalIpAddresses = ["127.0.0.1", "::1"];
+        public static readonly List<string> LocalIpAddresses =new List<string> { "127.0.0.1", "::1" };
 
         public static string NormalizeIp(string ipAddress)
         {

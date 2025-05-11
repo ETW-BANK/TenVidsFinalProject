@@ -14,6 +14,12 @@ namespace TenVids.Utilities.Mapper
 
             CreateMap<ApplicationUser, UserAddEditVM>();
 
+            CreateMap<Videos, VideoDisplayVm>()
+                 .ForMember(d => d.CategoryName, opt => opt.MapFrom(s => s.Category.Name))
+                 .ForMember(d => d.ChannelName, opt => opt.MapFrom(s => s.Channel.Name))
+                 .ForMember(d => d.Thumbnailurl, opt => opt.MapFrom(s => s.Thumbnail));
+
+
         }
     }
 }

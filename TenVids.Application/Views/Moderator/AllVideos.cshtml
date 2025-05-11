@@ -1,0 +1,64 @@
+﻿@model IEnumerable<VideoDisplayVm>
+
+<div class="card border-primary my-3">
+    <div class="card-header">All Videos (@Model.Count())</div>
+    <div class="card-body">
+        <div class="table-wrapper">
+            <table class="table table-striped" style="width: 100%">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Channel</th>
+                        <th>Category</th>
+                        <th>Created At</th>
+                        <th class="text-center">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="d-flex flex-column">
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <a asp-controller="Video" asp-action="WatchVideos" asp-route-id="@item.Id" class="text-dark">
+                                        @item.Title
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Video" asp-action="WatchVideosModerator" asp-route-id="@item.Id" class="text-dark">
+                                        @item.Title
+                                    </a>
+                                }
+
+                                <img src="@item.Thumbnailurl" alt="Thumbnail" class="card-img-top rounded preview-image mt-2" style="max-width: 200px;" />
+                            </td>
+                            <td>
+                                <a asp-controller="Member" asp-action="Channel" asp-route-id="@item.ChannelId" class="text-dark">
+                                    @item.ChannelName
+                                </a>
+                            </td>
+                            <td>@item.CategoryName</td>
+                            <td>@item.CreatedAt.ToLongDateString()</td>
+                            <td class="text-center">
+                                <form method="post" asp-action="DeleteVideo" asp-route-id="@item.Id">
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                        Delete
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">No Videos</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

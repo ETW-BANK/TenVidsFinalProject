@@ -22,17 +22,24 @@ namespace TenVids.Services
         }
         public async Task<ChannelAddEditVM> GetUserChannelAsync()
         {
-            var model=new ChannelAddEditVM();   
-            var channel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == _httpContextAccessor.HttpContext.User.GetUserId());
+            var model = new ChannelAddEditVM();
+
+            var channel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(
+                x => x.AppUserId == _httpContextAccessor.HttpContext.User.GetUserId(),
+                includeProperties: "Subscribers");
+
             if (channel != null)
             {
                 model.Name = channel.Name;
                 model.About = channel.Description;
+                model.SubscribersCount = channel.Subscribers?.Count ?? 0; 
+
                 return model;
             }
-            return null;
 
+            return null;
         }
+
         public async Task<ErrorModel<Channel>> CreateChannelAsync(ChannelAddEditVM model)
         {
             var ChannelExists= await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x=>x.Name==model.Name);

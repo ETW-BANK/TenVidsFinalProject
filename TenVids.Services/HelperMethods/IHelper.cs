@@ -28,10 +28,7 @@ namespace TenVids.Services.HelperMethods
 
         Task<IEnumerable<SelectListItem>> GetCategoryListAsync();
 
-        Task<VideoViews> AddVideoViewAsync(string userId, int videoId, string ipAddress);
-
-        Task <IP2LocationResultDto> GetIP2LocationResultAsync(string ipAddress );
-        Task<string> GetClientIpAddressAsync();
+        
 
     }
 }

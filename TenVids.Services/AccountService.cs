@@ -35,41 +35,37 @@ namespace TenVids.Services
 
             return Task.FromResult(loginVM);
         }
-        public async Task<bool> LoginAsync(LoginVM loginVM)
+        public async Task<ErrorModel<bool>> LoginAsync(LoginVM loginVM)
         {
             if (loginVM == null || string.IsNullOrEmpty(loginVM.UserName) || string.IsNullOrEmpty(loginVM.Password))
             {
-                return false; 
+                return ErrorModel<bool>.Failure("Username and password are required.");
             }
-           
-            var user = await _userManager.FindByNameAsync(loginVM.UserName);
+
+            var user = await _userManager.FindByNameAsync(loginVM.UserName)
+                       ?? await _userManager.FindByEmailAsync(loginVM.UserName);
 
             if (user == null)
             {
-                user = await _userManager.FindByEmailAsync(loginVM.UserName);
+                return ErrorModel<bool>.Failure("User not found.");
             }
 
-           
-            else if (user.LockoutEnabled)
+            if (user.LockoutEnabled)
             {
-                return false;
+                return ErrorModel<bool>.Failure("Your Account Is Locked. Please try again later.");
             }
 
-            var result = await _signInManager.PasswordSignInAsync(
-                user,
-                loginVM.Password,
-                isPersistent: false, 
-                lockoutOnFailure: false); 
+            var result = await _signInManager.PasswordSignInAsync(user, loginVM.Password, isPersistent: false, lockoutOnFailure: false);
 
             if (result.Succeeded)
             {
-               
                 await LoginHandlerAsync(user);
-                return true; 
+                return ErrorModel<bool>.Success(true, "Login successful.");
             }
 
-            return false; 
+            return ErrorModel<bool>.Failure("Invalid credentials.");
         }
+
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();

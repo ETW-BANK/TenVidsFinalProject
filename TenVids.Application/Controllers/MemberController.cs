@@ -6,7 +6,7 @@ using TenVids.Utilities;
 
 namespace TenVids.Application.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = SD.UserRole)]
     public class MemberController : Controller
     {
         private readonly IMembersService _members;

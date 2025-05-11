@@ -11,6 +11,8 @@ using TenVids.Models.DTOs;
 using Microsoft.EntityFrameworkCore;
 using TenVids.Services.HelperMethods;
 using TenVids.Utilities.FileHelpers;
+using AutoMapper;
+
 
 namespace TenVids.Services
 {
@@ -19,27 +21,24 @@ namespace TenVids.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IHttpContextAccessor? _httpContextAccessor;
         private readonly FileUploadConfig _fileUploadConfig;
-        private readonly IVideoViewService _videoViewService;
         private readonly IHelper _helper;
         private readonly IPicService _picservice;
+        private readonly IMapper _mapper;
         
-        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor,  IOptions<FileUploadConfig> fileUploadConfig,IHelper helper,IVideoViewService videoViewService,IPicService picservice)
+        public VideosService(IUnitOfWork unitOfWork,IHttpContextAccessor httpContextAccessor,  IOptions<FileUploadConfig> fileUploadConfig,IHelper helper,IPicService picservice,IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _httpContextAccessor = httpContextAccessor;
             _fileUploadConfig = fileUploadConfig.Value;
             _helper = helper;
-            _videoViewService = videoViewService;
-            _picservice= picservice;    
+            _picservice= picservice;
+            _mapper = mapper;
 
         }
         public async Task<PaginatedResult<VideoForHomeDto>> GetVideosForHomeGridAsync(HomeParameters parameters)
         {
             var userid = _httpContextAccessor?.HttpContext?.User.GetUserId();   
-            //if(userid==null)
-            //{
-            //    throw new UnauthorizedAccessException("User not authenticated");
-            //}
+         
             var paginatedList = await _helper.GetVideos(parameters);
 
             return new PaginatedResult<VideoForHomeDto>(
@@ -52,13 +51,13 @@ namespace TenVids.Services
         }
         public async Task<ErrorModel<Videos>> CreateEditVideoAsync(VideoVM model)
         {
-           
+            // Null check for HttpContext
             if (_httpContextAccessor?.HttpContext == null)
             {
                 return ErrorModel<Videos>.Failure("HttpContext not available", 500);
             }
 
-         
+            // Get user channel
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
             var userChannel = await _unitOfWork.ChannelRepository.GetFirstOrDefaultAsync(x => x.AppUserId == userId);
 
@@ -67,7 +66,7 @@ namespace TenVids.Services
                 return ErrorModel<Videos>.Failure("No Channel Found With Your Account", 404);
             }
 
-         
+           
             if (model.Id == 0)
             {
                 var videoExists = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
@@ -84,7 +83,7 @@ namespace TenVids.Services
 
             if (!_helper.IsAcceptableContentType("image", model.ImageUpload.ContentType))
             {
-                var allowedTypes =_helper.AcceptableContentTypes("image");
+                var allowedTypes = _helper.AcceptableContentTypes("image");
                 return ErrorModel<Videos>.Failure(
                     $"Invalid image type. Allowed: {string.Join(", ", allowedTypes)}",
                     400);
@@ -111,7 +110,7 @@ namespace TenVids.Services
                     $"Video exceeds maximum size of {_fileUploadConfig.VideoMaxSizeInMB}MB",
                     400);
 
-         
+            // Process uploaded files
             var thumbnailBytes = await _helper.ProcessUploadedFiles(model.ImageUpload);
             var videoBytes = await _helper.ProcessUploadedFiles(model?.VideoUpload);
 
@@ -125,6 +124,7 @@ namespace TenVids.Services
                 return await _helper.UpdateExistingVideo(model, thumbnailBytes, videoBytes);
             }
         }
+
         public async Task<PaginatedResult<VideoGridChannelDto>> GetVideosForChannelAsync(BaseParams parameters)
         {
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();
@@ -140,10 +140,10 @@ namespace TenVids.Services
                             Title = video.Title,
                             CreatedAt = video.CreatedAt,
                             CategoryName = video.Category.Name,
-                            Views = SD.GetRandomNumber(10000, 500000, video.Id),
-                            Comments = SD.GetRandomNumber(1, 100, video.Id),
-                            Likes = SD.GetRandomNumber(5, 100, video.Id),
-                            Dislikes = SD.GetRandomNumber(5, 100, video.Id),
+                            Views = video.VideoViewers.Count(),
+                            Comments =video.Comments.Count(),
+                            Likes = video.Likes.Count(),
+                            Dislikes = video.Likes.Count(x => x.IsLike == false),   
                             SubscribersCount = channel.Subscribers.Count()
                            
                         };
@@ -298,7 +298,7 @@ namespace TenVids.Services
 
             if (video == null)
             {
-                return null; // Problem 1: Return null safely as the method allows nullable return type.
+                return null; 
             }
 
             var suggestedVideos = _unitOfWork.VideosRepository.GetQueryable()
@@ -306,14 +306,14 @@ namespace TenVids.Services
                 .OrderBy(x => Guid.NewGuid())
                 .Take(5)
                 .ToList();
-
+            var UseripAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString();
             var userId = _httpContextAccessor?.HttpContext?.User?.GetUserId();
             if (userId == null)
             {
-                userId = "Anonymous"; // Problem 2 & 3: Handle null userId gracefully.
+                userId = "Anonymous"; 
             }
 
-            var clientIpAddress = await _helper.GetClientIpAddressAsync() ?? "127.0.1.1";
+         
 
             var availableComments = video.Comments?.Where(c => c != null).Select(c => new AvailableCommentsVM
             {
@@ -337,7 +337,7 @@ namespace TenVids.Services
                 IsDisliked = video.Likes?.Any(x => x.AppUserId == userId && x.IsLike == false) ?? false,
 
                 SubscribersCount = video.Channel?.Subscribers?.Count() ?? 0,
-                ViewsCount = video.VideoViewers?.Select(x => x.NumberOfVisits).Sum() ?? 0, 
+                ViewsCount = video.VideoViewers?.Select(x => x.NumberOfVisit).Sum() ?? 0, 
                 LikesCount = video.Likes?.Count(x => x.IsLike == true) ?? 0,
                 DislikesCount = video.Likes?.Count(x => x.IsLike == false) ?? 0,
 
@@ -358,13 +358,15 @@ namespace TenVids.Services
                 },
                 SuggestedVideos = suggestedVideos
             };
+            if (!string.IsNullOrEmpty(UseripAddress))
+            {
+                
+                await _unitOfWork.VideoViewRepository.HandleVideoViewAsync(userId, videoId, UseripAddress);
+                await _unitOfWork.CompleteAsync();
+            }
 
-            await _videoViewService.HandleVideoViewAsync(userId, videoId, clientIpAddress); 
-            await _unitOfWork.CompleteAsync();
             return result;
         }
-
-
 
         public async Task<ErrorModel<string>> LikeVideo(int videoId, string action, bool like)
         {
@@ -379,14 +381,14 @@ namespace TenVids.Services
                 var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(
                     x => x.Id == videoId,
                     includeProperties: "Likes",
-                    tracked: true); 
+                    tracked: true);
 
                 if (video == null)
                 {
                     return ErrorModel<string>.Failure("Video not found", 404);
                 }
 
-                // Initialize collection if null
+      
                 video.Likes ??= new List<Likes>();
 
                 var existingLike = video.Likes.FirstOrDefault(x => x.AppUserId == userId);
@@ -452,15 +454,15 @@ namespace TenVids.Services
                     return ErrorModel<string>.Failure("Invalid action", 400);
                 }
 
-             
+
                 _unitOfWork.VideosRepository.Update(video);
 
-               
+
                 bool changesSaved = await _unitOfWork.CompleteAsync();
 
                 if (changesSaved)
                 {
-                    
+
                     return ErrorModel<string>.Success(command);
                 }
                 else
@@ -470,10 +472,13 @@ namespace TenVids.Services
             }
             catch (Exception ex)
             {
-              
+
                 return ErrorModel<string>.Failure("Server Error", 500);
             }
         }
+
+
+
 
         public async Task<ErrorModel<VideoFileDto>> DownloadVideoFileAsync(int id)
         {
@@ -543,51 +548,54 @@ namespace TenVids.Services
 
             return videos.Cast<object>().ToList();
         }
-        //public async Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
-        //{
-        //    var video = await _unitOfWork.VideosRepository.GetFirstOrDefaultAsync(x => x.Id == model.Id);
-        //    if (video == null)
-        //    {
-        //        return ErrorModel<Videos>.Failure("Video not found", 404);
-        //    }
 
-        //    video.Title = model.Title;
-        //    video.Description = model.Description;
-        //    video.CategoryId = model.CategoryId;
-
-        //    if (model.ImageUpload != null)
-        //    {
-        //        video.Thumbnail = _picService.UploadPics(model.ImageUpload);
-        //    }
-        //    else
-        //    {
-        //        video.Thumbnail = model.ImageUrl;
-        //    }
-
-        //    if (model.VideoUpload != null)
-        //    {
-        //        video.VideoFile.ContentType = model.VideoUpload.ContentType;
-        //        video.VideoFile.Contents = await ProcessUploadedFiles(model.VideoUpload);
-        //    }
-
-        //    _unitOfWork.VideosRepository.Update(video);
-        //    await _unitOfWork.CompleteAsync();
-
-        //    return ErrorModel<Videos>.Success(video, "Video updated successfully");
-        //}
-        public Task<IEnumerable<VideoVM>> GetVideosByCategoryIdAsync(int categoryId)
+        public async Task<ErrorModel<IEnumerable<VideoDisplayVm>>> AllVideos()
         {
-            throw new NotImplementedException();
+            var result= await _unitOfWork.VideosRepository.GetAllAsync(
+                               includeProperties: "Category,Channel",
+                                              orderby: _helper.GetOrderByExpression("date-d"));
+            var vidios=_mapper.Map<IEnumerable<VideoDisplayVm>>(result);
+            if (vidios != null)
+            {
+                return ErrorModel<IEnumerable<VideoDisplayVm>>.Success(vidios.ToList(), "Videos retrieved successfully");
+            }
+            else
+            {
+                return ErrorModel<IEnumerable<VideoDisplayVm>>.Failure("No videos found", 404);
+            }
         }
 
-     
-
-        public Task<ErrorModel<Videos>> UpdateVideoAsync(VideoVM model)
+        public async Task<ErrorModel<VideoDisplayVm>> DeleteVideos(int id)
         {
-            throw new NotImplementedException();
-        }
+            var video = await _unitOfWork.VideosRepository.GetQueryable()
+                .Where(x => x.Id == id)
+                .Select(x => new { x.Id, x.Title, x.Thumbnail })
+                .FirstOrDefaultAsync();
+
+            if (video == null)
+            {
+                return ErrorModel<VideoDisplayVm>.Failure("Video not found", 404);
+            }
 
        
+            _picservice.DeletePhotoLocally(video.Thumbnail);
+
+         
+            var entity = await _unitOfWork.VideosRepository.GetByIdAsync(video.Id);
+            if (entity != null)
+            {
+                _unitOfWork.VideosRepository.Remove(entity);
+                await _unitOfWork.CompleteAsync();
+            }
+
+            return ErrorModel<VideoDisplayVm>.Success(new VideoDisplayVm
+            {
+                Id = video.Id,
+                Title = video.Title,
+                Thumbnailurl = video.Thumbnail
+            }, "Video deleted successfully");
+        }
+
     }
 
 }

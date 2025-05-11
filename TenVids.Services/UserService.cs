@@ -177,15 +177,24 @@ namespace TenVids.Services
                     return false;
                 }
 
-                var UnlockoutResult = await _userManager.SetLockoutEndDateAsync(user, null);
-                return UnlockoutResult.Succeeded;
+                
+                await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow);
+
+                
+                await _userManager.ResetAccessFailedCountAsync(user);
+
+              
+                user.LockoutEnabled = false;
+                var updateResult = await _userManager.UpdateAsync(user);
+
+                return updateResult.Succeeded;
             }
             catch
             {
-
                 return false;
             }
         }
+
 
         public async Task<bool> DeleteUserAsync(string id)
         {

@@ -69,9 +69,12 @@ namespace TenVids.Application.Controllers
             }
 
             TempData["success"] = result.Message;
-             return RedirectToAction("Index", "Channel");
+            return RedirectToAction("Index", "Channel");
         }
-       
+
+
+
+        [AllowAnonymous]
         public async Task<IActionResult> WatchVideos(int id)
         {
             var result=await _videosService.GetVideoToWatchAsync(id);
@@ -84,8 +87,21 @@ namespace TenVids.Application.Controllers
 
             return View(result);
         }
+        [Authorize]
+        public async Task<IActionResult> WatchVideosModerator(int id)
+        {
+            var result = await _videosService.GetVideoToWatchAsync(id);
 
-       [AllowAnonymous]
+            if (result == null)
+            {
+                TempData["error"] = "Video not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(result);
+        }
+
+        [AllowAnonymous]
         public async Task<IActionResult> GetVideoFile(int? videoId)
         {
             try
@@ -143,8 +159,6 @@ namespace TenVids.Application.Controllers
 
             return RedirectToAction("WatchVideos", new { id = comments.PostComment.VideoId });
         }
-
-
 
 
 
@@ -219,6 +233,7 @@ namespace TenVids.Application.Controllers
         }
 
         [HttpPut]
+        [Authorize]
         public async Task<IActionResult> LikeVideo(int videoId, string action,bool like)
         {
             var result = await _videosService.LikeVideo(videoId, action,like);
