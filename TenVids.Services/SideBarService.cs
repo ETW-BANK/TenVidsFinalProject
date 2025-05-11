@@ -51,7 +51,7 @@ namespace TenVids.Services
             }
 
             var result = await _context.Likes
-                .Where(x => x.AppUserId == userId && x.IsLike == liked)
+                .Where(x => x.AppUserId == userId && x.IsLike == liked)  // Filter by liked or disliked
                 .Select(x => new LikeDislikeDto
                 {
                     Id = x.VideoId,
@@ -61,11 +61,14 @@ namespace TenVids.Services
                     ChannelId = x.Video.Channel.Id,
                     CreatedAtTimeAgo = SD.TimeAgo(x.Video.CreatedAt),
                     CreatedAt = x.Video.CreatedAt,
+                    IsLiked = x.IsLike,
+                })
                 
-                }).ToListAsync();
+                .ToListAsync();
 
             return result;
         }
+
 
         public async Task<IEnumerable<SubscriptionDto>> GetSubscriptions()
         {
