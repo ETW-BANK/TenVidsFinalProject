@@ -51,7 +51,7 @@ namespace TenVids.Services
             }
 
             var result = await _context.Likes
-                .Where(x => x.AppUserId == userId && x.IsLike == liked)  // Filter by liked or disliked
+                .Where(x => x.AppUserId == userId && x.IsLike == liked)  
                 .Select(x => new LikeDislikeDto
                 {
                     Id = x.VideoId,
@@ -61,7 +61,7 @@ namespace TenVids.Services
                     ChannelId = x.Video.Channel.Id,
                     CreatedAtTimeAgo = SD.TimeAgo(x.Video.CreatedAt),
                     CreatedAt = x.Video.CreatedAt,
-                    IsLiked = x.IsLike,
+                    IsLiked = liked
                 })
                 
                 .ToListAsync();
