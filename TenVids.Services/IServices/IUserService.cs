@@ -1,5 +1,4 @@
-﻿
-using TenVids.Models;
+﻿using TenVids.Models;
 using TenVids.ViewModels;
 
 namespace TenVids.Services.IServices

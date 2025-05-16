@@ -80,7 +80,6 @@ namespace TenVids.Data.Access.Data
                 .HasForeignKey(v => v.VideoId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-       
 
         }
 

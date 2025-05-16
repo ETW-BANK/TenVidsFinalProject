@@ -1,6 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
-using TenVids.Utilities;
+﻿using TenVids.Utilities;
 using TenVids.ViewModels;
 
 namespace TenVids.Services.IServices

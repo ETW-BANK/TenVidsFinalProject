@@ -10,8 +10,6 @@ using TenVids.Utilities.FileHelpers;
 using System.Linq.Expressions;
 using TenVids.Data.Access.IRepo;
 
-
-
 public class CategoryServiceTests
 {
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;

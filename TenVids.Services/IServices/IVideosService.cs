@@ -1,5 +1,4 @@
-﻿
-using TenVids.Models;
+﻿using TenVids.Models;
 using TenVids.Models.DTOs;
 using TenVids.Models.Pagination;
 using TenVids.Utilities;

@@ -15,7 +15,6 @@ using TenVids.ViewModels;
 using TenVids.Data.Access.IRepo;
 using TenVids.Services;
 
-
 public class VideosServiceTests
 {
     private readonly Mock<IUnitOfWork> _unitOfWorkMock;

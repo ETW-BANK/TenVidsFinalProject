@@ -69,7 +69,6 @@ namespace TenVids.Services
             return result;
         }
 
-
         public async Task<IEnumerable<SubscriptionDto>> GetSubscriptions()
         {
             var userId = _httpContextAccessor.HttpContext.User.GetUserId();

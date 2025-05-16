@@ -1,6 +1,4 @@
-﻿
-
-using TenVids.Models.DTOs;
+﻿using TenVids.Models.DTOs;
 
 namespace TenVids.Services.IServices
 {

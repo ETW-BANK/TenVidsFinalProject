@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using TenVids.Data.Access.IRepo;
-
 using TenVids.Services.IServices;
 using TenVids.ViewModels;
 
@@ -21,13 +20,7 @@ namespace TenVids.Services
         public async Task<HomeVM> GoToHomeAsync(string page)
         {
             var home = new HomeVM();
-            //var userId = _httpContextAccessor.HttpContext?.User?.GetUserId();
-
-            //if (string.IsNullOrEmpty(userId))
-            //{
-            //    throw new UnauthorizedAccessException("User not authenticated");
-            //}
-
+          
             home.Page= page ?? "Home";
 
             if (string.IsNullOrEmpty(page) || page.Equals("Home", StringComparison.OrdinalIgnoreCase))

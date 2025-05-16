@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace TenVids.Models.DTOs
+﻿namespace TenVids.Models.DTOs
 {
     public class VideoFileDto
     {
