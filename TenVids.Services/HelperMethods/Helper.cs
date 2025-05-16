@@ -5,7 +5,7 @@ using TenVids.Models.Pagination;
 using TenVids.Models;
 using TenVids.Utilities;
 using TenVids.ViewModels;
-using TenVids.Repository.IRepository;
+using TenVids.Data.Access.IRepo;
 using TenVids.Utilities.FileHelpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;

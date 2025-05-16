@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using TenVids.Models;
-using TenVids.Repository.IRepository;
+using TenVids.Data.Access.IRepo;
 using TenVids.Services.Extensions;
 using TenVids.Services.IServices;
 using TenVids.Utilities;

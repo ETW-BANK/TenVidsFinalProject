@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using TenVids.Models;
-using TenVids.Repository.IRepository;
+using TenVids.Data.Access.IRepo;
 using TenVids.Services.Extensions;
 using TenVids.Services.IServices;
-using TenVids.Utilities;
 using TenVids.ViewModels;
 using Microsoft.Extensions.Options;
 using TenVids.Models.Pagination;
@@ -12,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using TenVids.Services.HelperMethods;
 using TenVids.Utilities.FileHelpers;
 using AutoMapper;
+using TenVids.Utilities;
 
 
 namespace TenVids.Services

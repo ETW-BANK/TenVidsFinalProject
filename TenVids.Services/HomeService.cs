@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using TenVids.Repository.IRepository;
-using TenVids.Services.Extensions;
+using TenVids.Data.Access.IRepo;
+
 using TenVids.Services.IServices;
 using TenVids.ViewModels;
 

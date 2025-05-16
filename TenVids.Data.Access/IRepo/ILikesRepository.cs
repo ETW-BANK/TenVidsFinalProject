@@ -2,7 +2,7 @@
 
 using TenVids.Models;
 
-namespace TenVids.Repository.IRepository
+namespace TenVids.Data.Access.IRepo
 {
    public interface ILikesRepository
     {

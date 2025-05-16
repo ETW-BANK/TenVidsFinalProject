@@ -1,7 +1,7 @@
 ﻿
 using TenVids.Data.Access.Data;
 using TenVids.Models;
-using TenVids.Repository.IRepository;
+using TenVids.Data.Access.IRepo;
 
 namespace TenVids.Repository
 {

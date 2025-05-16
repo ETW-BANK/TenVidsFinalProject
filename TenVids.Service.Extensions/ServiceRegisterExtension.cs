@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TenVids.Data.Access.Data;
 using TenVids.Models;
 using TenVids.Repository;
-using TenVids.Repository.IRepository;
+using TenVids.Data.Access.IRepo;
 using TenVids.Services;
 using TenVids.Services.HelperMethods;
 using TenVids.Services.IServices;

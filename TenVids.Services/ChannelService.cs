@@ -1,4 +1,4 @@
-﻿using TenVids.Repository.IRepository;
+﻿using TenVids.Data.Access.IRepo;
 using TenVids.Services.IServices;
 using TenVids.ViewModels;
 using Microsoft.AspNetCore.Http;

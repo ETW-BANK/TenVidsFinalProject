@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using TenVids.Data.Access.Data;
 using TenVids.Models;
-using TenVids.Repository.IRepository;
+using TenVids.Data.Access.IRepo;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.Utilities.FileHelpers;

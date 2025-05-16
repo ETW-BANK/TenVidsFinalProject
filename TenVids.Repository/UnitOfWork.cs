@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TenVids.Data.Access.Data;
-using TenVids.Repository.IRepository;
+using TenVids.Data.Access.IRepo;
+
 
 namespace TenVids.Repository
 {

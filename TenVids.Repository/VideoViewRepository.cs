@@ -3,9 +3,10 @@ using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TenVids.Data.Access.Data;
+using TenVids.Data.Access.IRepo;
 using TenVids.Models;
 using TenVids.Models.DTOs;
-using TenVids.Repository.IRepository;
+    
 using TenVids.Utilities;
 
 namespace TenVids.Repository
