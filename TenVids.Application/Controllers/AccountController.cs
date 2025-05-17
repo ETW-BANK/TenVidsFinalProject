@@ -56,18 +56,20 @@ namespace TenVids.Application.Controllers
             {
                 return View(registerVM);
             }
+
             try
             {
                 await _accountService.Register(registerVM);
-                return RedirectToAction("Index", "Home");
+
+                return RedirectToAction(nameof(Login));
             }
             catch (Exception ex)
-            {  
+            {
                 ModelState.AddModelError(string.Empty, ex.Message);
-
                 return View(registerVM);
             }
         }
+
 
         [HttpGet]
         public IActionResult AccessDenied()
