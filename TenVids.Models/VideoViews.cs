@@ -1,6 +1,6 @@
-﻿
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations.Schema;
+using Tensae.Generic.Repository;
 
 namespace TenVids.Models
 {

@@ -1,4 +1,5 @@
-﻿using TenVids.Models;
+﻿using Tensae.Generic.Repository;
+using TenVids.Models;
 
 namespace TenVids.Data.Access.IRepo
 {

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Tensae.Generic.Repository;
 
 namespace TenVids.Models
 {

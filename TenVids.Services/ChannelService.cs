@@ -1,4 +1,4 @@
-﻿using TenVids.Data.Access.IRepo;
+﻿
 using TenVids.Services.IServices;
 using TenVids.ViewModels;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +6,7 @@ using TenVids.Services.Extensions;
 using TenVids.Models;
 using TenVids.Utilities;
 using Microsoft.EntityFrameworkCore;
+using TenVids.Data.Access.IRepo;
 
 namespace TenVids.Services
 {

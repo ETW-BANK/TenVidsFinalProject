@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TenVids.Data.Access.Data;
-using TenVids.Models;
 using TenVids.Data.Access.IRepo;
+using TenVids.Models;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.Utilities.FileHelpers;
@@ -14,7 +14,7 @@ namespace TenVids.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly TenVidsApplicationContext _context;
         private readonly IPicService _picService;   
-        public CategoryService(IUnitOfWork unitOfWork,TenVidsApplicationContext context,IPicService picService)
+        public CategoryService(Data.Access.IRepo.IUnitOfWork unitOfWork,TenVidsApplicationContext context,IPicService picService)
         {
             _unitOfWork = unitOfWork;
             _context = context;

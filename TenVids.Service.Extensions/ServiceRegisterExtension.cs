@@ -12,6 +12,7 @@ using TenVids.Services.HelperMethods;
 using TenVids.Services.IServices;
 using TenVids.Utilities;
 using TenVids.Utilities.FileHelpers;
+using Tensae.Generic.Repository;
 
 
 namespace TenVids.Service.Extensions
@@ -45,7 +46,9 @@ namespace TenVids.Service.Extensions
             services.AddHttpContextAccessor();
             services.AddSession();
            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-   
+            services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+
             var connectionString = configuration.GetConnectionString("TenVidDb");
             services.AddDbContext<TenVidsApplicationContext>(options =>
                 options.UseSqlServer(connectionString));

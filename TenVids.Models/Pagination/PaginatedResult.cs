@@ -1,5 +1,4 @@
 ﻿
-
 namespace TenVids.Models.Pagination
 {
    public class PaginatedResult<T> where T : class
